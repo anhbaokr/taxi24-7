@@ -30,6 +30,7 @@
       background: #000;
       padding: 1rem 0.5rem;
       z-index: 100;
+      transition: left 0.3s ease;
     }
     nav ul {
       list-style: none;
@@ -108,7 +109,6 @@
       outline: none;
       color: var(--text-color);
       font-size: 1rem;
-      autocomplete: off;
     }
     .form-group input::placeholder,
     .form-group textarea::placeholder {
@@ -195,14 +195,42 @@
     #copy-alert.show {
       opacity: 1;
     }
+
+    /* Nút mở menu */
+    #menu-toggle {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 1000;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 1.2rem;
+      display: none;
+    }
+
     @media screen and (max-width: 768px) {
-      .form-container, .contact-menu {
-        width: 90%;
+      header {
+        left: -220px;
+      }
+      header.show {
+        left: 0;
+      }
+      #menu-toggle {
+        display: block;
+      }
+      body {
+        padding-left: 0;
       }
     }
   </style>
 </head>
 <body>
+  <!-- Nút mở menu (chỉ hiện trên mobile) -->
+  <button id="menu-toggle"><i class="fas fa-bars"></i></button>
+
   <header>
     <nav>
       <ul>
@@ -224,10 +252,10 @@
 
   <section id="form-section" class="active">
     <div class="form-container">
-      <div class="form-group"><i class="fas fa-user"></i><input type="text" placeholder="Họ tên" data-i18n-placeholder="name" autocomplete="off"></div>
-      <div class="form-group"><i class="fas fa-phone"></i><input type="tel" placeholder="Số điện thoại" data-i18n-placeholder="phone" autocomplete="off"></div>
-      <div class="form-group"><i class="fas fa-map-marker-alt"></i><input type="text" placeholder="Điểm đi" data-i18n-placeholder="from" autocomplete="off"></div>
-      <div class="form-group"><i class="fas fa-map-marked-alt"></i><input type="text" placeholder="Điểm đến" data-i18n-placeholder="to" autocomplete="off"></div>
+      <div class="form-group"><i class="fas fa-user"></i><input type="text" placeholder="Họ tên" data-i18n-placeholder="name" autocomplete="off" required></div>
+      <div class="form-group"><i class="fas fa-phone"></i><input type="tel" placeholder="Số điện thoại" data-i18n-placeholder="phone" autocomplete="off" required></div>
+      <div class="form-group"><i class="fas fa-map-marker-alt"></i><input type="text" placeholder="Điểm đi" data-i18n-placeholder="from" autocomplete="off" required></div>
+      <div class="form-group"><i class="fas fa-map-marked-alt"></i><input type="text" placeholder="Điểm đến" data-i18n-placeholder="to" autocomplete="off" required></div>
       <div class="form-group"><i class="fas fa-pen"></i><textarea rows="2" placeholder="Ghi chú" data-i18n-placeholder="note" autocomplete="off"></textarea></div>
       <div class="btn-group">
         <button onclick="copyAndShowMenu()" data-i18n-btn="copy">Copy</button>
@@ -259,6 +287,10 @@
   </div>
 
   <div id="copy-alert"></div>
+
+  <!-- Facebook Messenger Chat Plugin -->
+  <div id="fb-root"></div>
+  <div id="fb-customer-chat" class="fb-customerchat"></div>
 
   <script>
     const translations = {
@@ -359,15 +391,21 @@
       setTimeout(() => alertBox.classList.remove("show"), 3000);
     }
 
+    // Ngôn ngữ
     document.getElementById("language-select").addEventListener("change", (e) => {
       const lang = e.target.value;
+      localStorage.setItem("lang", lang);
       updateLangStatus(lang);
       updateLanguage(lang);
     });
 
-    updateLangStatus("vi");
-    updateLanguage("vi");
+    // Load ngôn ngữ đã lưu
+    const savedLang = localStorage.getItem("lang") || "vi";
+    document.getElementById("language-select").value = savedLang;
+    updateLangStatus(savedLang);
+    updateLanguage(savedLang);
 
+    // Menu chuyển mục
     document.querySelectorAll(".menu-item").forEach(item => {
       item.addEventListener("click", () => {
         document.querySelector(".menu-item.active")?.classList.remove("active");
@@ -377,43 +415,45 @@
       });
     });
 
+    // Click ngoài để ẩn contact menu
     document.addEventListener("click", (e) => {
       const menu = document.getElementById("contactMenu");
       if (!menu.contains(e.target) && !e.target.closest("button")) {
         menu.classList.remove("active");
       }
     });
-  </script>
-</body>
-<body>
-  <!-- Nội dung trang web của bạn đặt ở đây -->
 
-  <!-- Facebook Messenger Chat Plugin -->
-  <div id="fb-root"></div>
-  <div id="fb-customer-chat" class="fb-customerchat"></div>
+    // Toggle menu trên mobile
+    const toggleBtn = document.getElementById("menu-toggle");
+    const sidebar = document.querySelector("header");
 
-  <script>
+    toggleBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("show");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (window.innerWidth <= 768 &&
+          !sidebar.contains(e.target) &&
+          !toggleBtn.contains(e.target)) {
+        sidebar.classList.remove("show");
+      }
+    });
+
+    // Messenger
     var chatbox = document.getElementById('fb-customer-chat');
-    chatbox.setAttribute("page_id", "750873561437244"); // 🔁 Thay bằng ID thật của Fanpage bạn
+    chatbox.setAttribute("page_id", "750873561437244");
     chatbox.setAttribute("attribution", "biz_inbox");
-  </script>
 
-  <script>
     window.fbAsyncInit = function() {
-      FB.init({
-        xfbml: true,
-        version: 'v19.0'
-      });
+      FB.init({ xfbml: true, version: 'v19.0' });
     };
 
     (function(d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) return;
-      js = d.createElement(s); js.id = id;
+      var js = d.createElement(s); js.id = id;
       js.src = 'https://connect.facebook.net/vi_VN/sdk/xfbml.customerchat.js';
-      fjs.parentNode.insertBefore(js, fjs);
+      d.getElementsByTagName(s)[0].parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
   </script>
 </body>
-
 </html>
