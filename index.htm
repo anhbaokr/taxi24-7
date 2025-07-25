@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Đặt Xe Nhanh</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     :root {
       --bg-color: #121212;
@@ -23,8 +23,10 @@
       padding-left: 220px;
     }
     header {
-      position: fixed; top: 0; left: 0;
-      width: 220px; height: 100vh;
+      position: fixed;
+      top: 0; left: 0;
+      width: 220px;
+      height: 100vh;
       background: #000;
       padding: 1rem 0.5rem;
       z-index: 100;
@@ -67,7 +69,10 @@
       color: #ccc;
       margin-top: 5px;
     }
-    section { display: none; padding: 2rem; }
+    section {
+      display: none;
+      padding: 2rem;
+    }
     section.active {
       display: block;
       animation: waveFade 0.6s ease-in-out;
@@ -97,7 +102,8 @@
       color: var(--accent-color);
       margin-right: 10px;
     }
-    .form-group input, .form-group textarea {
+    .form-group input,
+    .form-group textarea {
       flex: 1;
       background: transparent;
       border: none;
@@ -165,7 +171,8 @@
     }
     #copy-alert {
       position: fixed;
-      top: 20px; left: 50%;
+      top: 20px;
+      left: 50%;
       transform: translateX(-50%);
       background: #ff9800;
       color: #000;
@@ -242,14 +249,19 @@
       <iframe id="dichvu-frame" src="" frameborder="0" width="100%" style="min-height: 570px;"></iframe>
     </div>
   </section>
+
   <section id="about-section">
     <div class="form-container">
       <iframe id="gioithieu-frame" src="" frameborder="0" width="100%" style="min-height: 400px;"></iframe>
     </div>
   </section>
+
   <section id="contact-section">
-    <div class="form-container" data-i18n="contact-admin">Liên hệ admin: 0909 123 456</div>
+    <div class="form-container">
+      <iframe id="lienhe-frame" src="" frameborder="0" width="100%" style="min-height: 400px;"></iframe>
+    </div>
   </section>
+
   <section id="pricing-section">
     <div class="form-container">
       <iframe id="banggia-frame" src="" frameborder="0" width="100%" style="min-height: 400px;"></iframe>
@@ -272,19 +284,20 @@
       vi: {
         "menu-book":"Đặt xe","menu-services":"Dịch vụ","menu-about":"Giới thiệu","menu-contact":"Liên hệ","menu-pricing":"Bảng giá",
         "placeholder-name":"Họ tên","placeholder-phone":"Số điện thoại","placeholder-from":"Điểm đi","placeholder-to":"Điểm đến","placeholder-note":"Ghi chú",
-        "btn-copy":"Copy","btn-reset":"Reset","contact-title":"Chọn kênh liên hệ","contact-phone":"Số điện thoại","contact-admin":"Liên hệ admin: 0909 123 456",
+        "btn-copy":"Copy","btn-reset":"Reset","contact-title":"Chọn kênh liên hệ","contact-phone":"Số điện thoại",
         "copy-warning":"⚠️ Vui lòng nhập đầy đủ thông tin trước khi sao chép."
       },
       en: {
         "menu-book":"Book a Ride","menu-services":"Services","menu-about":"About","menu-contact":"Contact","menu-pricing":"Pricing",
         "placeholder-name":"Full Name","placeholder-phone":"Phone Number","placeholder-from":"From","placeholder-to":"To","placeholder-note":"Note",
-        "btn-copy":"Copy","btn-reset":"Reset","contact-title":"Choose Contact Method","contact-phone":"Phone Call","contact-admin":"Contact admin: 0909 123 456",
+        "btn-copy":"Copy","btn-reset":"Reset","contact-title":"Choose Contact Method","contact-phone":"Phone Call",
         "copy-warning":"⚠️ Please fill in all fields before copying."
       }
     };
 
     const lang = localStorage.getItem("lang") || "vi";
     document.getElementById("language-select").value = lang;
+    document.getElementById("lienhe-frame").src = `lienhe.htm?lang=${lang}`;
     document.getElementById("dichvu-frame").src = `dichvu.htm?lang=${lang}`;
     document.getElementById("banggia-frame").src = `banggia.htm?lang=${lang}`;
     document.getElementById("gioithieu-frame").src = `gioithieu.htm?lang=${lang}`;
@@ -305,7 +318,8 @@
     }
 
     function updateLangStatus(lang) {
-      document.getElementById("lang-status").textContent = lang === "vi" ? "Ngôn ngữ đang sử dụng: Tiếng Việt" : "Language: English";
+      document.getElementById("lang-status").textContent =
+        lang === "vi" ? "Ngôn ngữ đang sử dụng: Tiếng Việt" : "Language: English";
     }
 
     document.getElementById("language-select").addEventListener("change", e => {
@@ -313,9 +327,9 @@
       localStorage.setItem("lang", newLang);
       updateLangStatus(newLang);
       updateLanguage(newLang);
-      document.getElementById("banggia-frame").contentWindow?.postMessage({ type: "langChange", lang: newLang }, "*");
-      document.getElementById("gioithieu-frame").contentWindow?.postMessage({ type: "langChange", lang: newLang }, "*");
-      document.getElementById("dichvu-frame").contentWindow?.postMessage({ type: "langChange", lang: newLang }, "*");
+      ["banggia", "gioithieu", "dichvu", "lienhe"].forEach(id => {
+        document.getElementById(`${id}-frame`).contentWindow?.postMessage({ type: "langChange", lang: newLang }, "*");
+      });
     });
 
     document.querySelectorAll(".menu-item").forEach(item => {
@@ -363,11 +377,9 @@
     }
 
     window.addEventListener("message", e => {
-      if (e.data?.type === "setHeight" && e.data.target === "gioithieu") {
-        document.getElementById("gioithieu-frame").style.height = e.data.height + "px";
-      }
-      if (e.data?.type === "setHeight" && e.data.target === "banggia") {
-        document.getElementById("banggia-frame").style.height = e.data.height + "px";
+      if (e.data?.type === "setHeight") {
+        const frame = document.getElementById(`${e.data.target}-frame`);
+        if (frame) frame.style.height = e.data.height + "px";
       }
     });
 
