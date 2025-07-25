@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giới Thiệu</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #f1f1f1;
+    }
+    h1 {
+      color: #00bcd4;
+    }
+    .map-container {
+      margin-top: 30px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    iframe {
+      width: 100%;
+      height: 350px;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="intro-title">Giới thiệu về dịch vụ đặt xe</h1>
+  <p id="intro-content">
+    Chúng tôi cung cấp dịch vụ đặt xe nhanh chóng, an toàn và tiện lợi tại Hà Nội và khu vực lân cận. Với đội ngũ tài xế chuyên nghiệp và hệ thống điều phối thông minh, bạn có thể yên tâm lựa chọn dịch vụ của chúng tôi cho mọi nhu cầu di chuyển.
+  </p>
+
+  <div class="map-container">
+    <iframe
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.5556747583186!2d105.67235667513149!3d20.99274608901019!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135c42c2f6f83a9%3A0xa95b1aee90e3bc92!2sRJ2R%2B47H%20Ch%C6%B0%C6%A1ng%20M%E1%BB%B9%2C%20H%C3%A0%20N%E1%BB%99i!5e0!3m2!1svi!2s!4v1721884600705!5m2!1svi!2s"
+      allowfullscreen=""
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+  </div>
+
+  <script>
+    const translations = {
+      vi: {
+        title: "Giới thiệu về dịch vụ đặt xe",
+        content: "Chúng tôi cung cấp dịch vụ đặt xe nhanh chóng, an toàn và tiện lợi tại Hà Nội và khu vực lân cận. Với đội ngũ tài xế chuyên nghiệp và hệ thống điều phối thông minh, bạn có thể yên tâm lựa chọn dịch vụ của chúng tôi cho mọi nhu cầu di chuyển."
+      },
+      en: {
+        title: "About Our Ride Booking Service",
+        content: "We offer fast, safe, and convenient ride booking services in Hanoi and nearby areas. With a team of professional drivers and a smart dispatch system, you can rely on us for all your transportation needs."
+      }
+    };
+
+    function applyTranslation(lang) {
+      const t = translations[lang] || translations.vi;
+      document.getElementById("intro-title").textContent = t.title;
+      document.getElementById("intro-content").textContent = t.content;
+    }
+
+    const currentLang = localStorage.getItem("selectedLanguage") || "vi";
+    applyTranslation(currentLang);
+
+    window.addEventListener("message", (event) => {
+      if (event.data && event.data.type === "langChange") {
+        localStorage.setItem("selectedLanguage", event.data.lang);
+        applyTranslation(event.data.lang);
+      }
+    });
+  </script>
+  
+  <script>
+  function sendHeight() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ type: "setHeight", height: height, target: "gioithieu" }, "*");
+  }
+
+  // Gửi chiều cao khi load
+  window.addEventListener("load", sendHeight);
+  // Gửi lại khi resize hoặc nội dung thay đổi
+  window.addEventListener("resize", sendHeight);
+</script>
+
+</body>
+</html>

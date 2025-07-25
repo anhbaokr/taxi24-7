@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Liên Hệ - Đặt Xe Nhanh</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(145deg, #0f0f0f, #1a1a1a);
+      color: #f0f0f0;
+      animation: fadeIn 1s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 30px;
+      background: #1e1e1e;
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.05);
+    }
+    h1 {
+      text-align: center;
+      color: #00bcd4;
+      margin-bottom: 40px;
+      font-size: 2rem;
+    }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .info-card {
+      background-color: #2a2a2a;
+      padding: 20px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .info-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 10px rgba(0, 188, 212, 0.3);
+    }
+    .info-card i, .info-card img {
+      font-size: 22px;
+      color: #00bcd4;
+      min-width: 24px;
+    }
+    .info-card img {
+      width: 24px;
+      height: 24px;
+    }
+    .info-text {
+      display: flex;
+      flex-direction: column;
+    }
+    .info-text a {
+      color: #00bcd4;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .info-text a:hover {
+      color: #ffffff;
+    }
+    .info-text span {
+      color: #bbb;
+    }
+
+    @media screen and (max-width: 600px) {
+      .container {
+        margin: 20px;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Liên Hệ</h1>
+    <div class="contact-grid">
+
+      <!-- SĐT -->
+      <div class="info-card">
+        <i class="fas fa-phone-alt"></i>
+        <div class="info-text">
+          <span>Hotline</span>
+          <a href="tel:0987654321">0987 654 321</a>
+        </div>
+      </div>
+
+      <!-- Zalo -->
+      <div class="info-card">
+        <img src="https://cdn-icons-png.flaticon.com/512/5968/5968841.png" alt="Zalo">
+        <div class="info-text">
+          <span>Zalo</span>
+          <a href="https://zalo.me/0987654321" target="_blank">zalo.me/0987654321</a>
+        </div>
+      </div>
+
+      <!-- Facebook cá nhân -->
+      <div class="info-card">
+        <i class="fab fa-facebook"></i>
+        <div class="info-text">
+          <span>Facebook cá nhân</span>
+          <a href="https://www.facebook.com/ten.ca.nhan" target="_blank">facebook.com/ten.ca.nhan</a>
+        </div>
+      </div>
+
+      <!-- Fanpage -->
+      <div class="info-card">
+        <i class="fab fa-facebook-messenger"></i>
+        <div class="info-text">
+          <span>Fanpage</span>
+          <a href="https://www.facebook.com/TaxiLuanNguyen" target="_blank">Taxi Luân Nguyễn</a>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="info-card">
+        <i class="fas fa-envelope"></i>
+        <div class="info-text">
+          <span>Email</span>
+          <a href="mailto:hotro@taxiluan.vn">hotro@taxiluan.vn</a>
+        </div>
+      </div>
+
+      <!-- Địa chỉ -->
+      <div class="info-card">
+        <i class="fas fa-map-marker-alt"></i>
+        <div class="info-text">
+          <span>Địa chỉ</span>
+          <span>Số 123 Đường Lớn, Hoàng Mai, Hà Nội</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

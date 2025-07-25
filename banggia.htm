@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng Giá Dịch Vụ</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-color: #121212;
+      --text-color: #fff;
+      --accent-color: #00bcd4;
+      --card-bg: #1e1e1e;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--accent-color);
+      margin-bottom: 2rem;
+    }
+
+    .pricing-table {
+      background: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: 12px;
+      max-width: 800px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .pricing-table table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #333;
+    }
+
+    .pricing-table th, .pricing-table td {
+      padding: 14px 12px;
+      border: 1px solid #333;
+      text-align: left;
+    }
+
+    .pricing-table th {
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+      .pricing-table {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1 id="page-title">💰 Bảng Giá Dịch Vụ Đặt Xe</h1>
+  <div class="pricing-table">
+    <table>
+      <thead>
+        <tr>
+          <th id="route">Tuyến</th>
+          <th id="type">Loại xe</th>
+          <th id="price">Giá (VNĐ)</th>
+        </tr>
+      </thead>
+      <tbody id="price-body">
+        <!-- Dữ liệu sẽ được cập nhật qua JavaScript -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const translations = {
+      vi: {
+        title: "💰 Bảng Giá Dịch Vụ Đặt Xe",
+        route: "Tuyến",
+        type: "Loại xe",
+        price: "Giá (VNĐ)",
+        data: [
+          ["Nội thành", "4 chỗ", "100.000 - 150.000"],
+          ["Nội thành", "7 chỗ", "150.000 - 200.000"],
+          ["Sân bay → Trung tâm", "4 chỗ", "200.000"],
+          ["Sân bay → Trung tâm", "7 chỗ", "250.000"],
+          ["Liên tỉnh", "4 chỗ", "~10.000/km"],
+          ["Liên tỉnh", "7 chỗ", "~12.000/km"]
+        ]
+      },
+      en: {
+        title: "💰 Service Price Table",
+        route: "Route",
+        type: "Car Type",
+        price: "Price (VND)",
+        data: [
+          ["Inner City", "4 seats", "100,000 - 150,000"],
+          ["Inner City", "7 seats", "150,000 - 200,000"],
+          ["Airport → Downtown", "4 seats", "200,000"],
+          ["Airport → Downtown", "7 seats", "250,000"],
+          ["Interprovince", "4 seats", "~10,000/km"],
+          ["Interprovince", "7 seats", "~12,000/km"]
+        ]
+      }
+    };
+
+    function applyTranslation(lang) {
+      const t = translations[lang] || translations.vi;
+
+      document.getElementById("page-title").textContent = t.title;
+      document.getElementById("route").textContent = t.route;
+      document.getElementById("type").textContent = t.type;
+      document.getElementById("price").textContent = t.price;
+
+      const tbody = document.getElementById("price-body");
+      tbody.innerHTML = "";
+      t.data.forEach(row => {
+        const tr = document.createElement("tr");
+        row.forEach(cell => {
+          const td = document.createElement("td");
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+
+      sendHeight(); // Cập nhật chiều cao iframe
+    }
+
+    function sendHeight() {
+      const height = document.documentElement.scrollHeight;
+      parent.postMessage({ type: "setHeight", height: height }, "*");
+    }
+
+    window.addEventListener("load", () => {
+      const langStored = localStorage.getItem("lang");
+      const langFromQuery = new URLSearchParams(window.location.search).get("lang");
+      const defaultLang = langFromQuery || langStored || "vi";
+      applyTranslation(defaultLang);
+      sendHeight();
+    });
+
+    window.addEventListener("resize", sendHeight);
+
+    // Nhận ngôn ngữ từ trang chính (index.html)
+    window.addEventListener("message", function (event) {
+      if (event.data && event.data.type === "langChange") {
+        const lang = event.data.lang;
+        localStorage.setItem("lang", lang);
+        applyTranslation(lang);
+      }
+    });
+  </script>
+   <script>
+  function sendHeight() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ type: "setHeight", height: height, target: "banggia" }, "*");
+  }
+
+  // Gửi chiều cao khi load
+  window.addEventListener("load", sendHeight);
+  // Gửi lại khi resize hoặc nội dung thay đổi
+  window.addEventListener("resize", sendHeight);
+</script>
+</body>
+</html>

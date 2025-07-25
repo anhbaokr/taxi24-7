@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dịch Vụ</title>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --text-color: #ffffff;
+      --accent-color: #00bcd4;
+      --card-bg: #1e1e1e;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 12px;
+      scrollbar-color: #00bcd4 #1e1e1e; /* Firefox */
+      scrollbar-width: thin;
+    }
+
+    /* Scrollbar cho Chrome, Edge, Safari */
+    body::-webkit-scrollbar {
+      width: 8px;
+    }
+    body::-webkit-scrollbar-track {
+      background: #1e1e1e;
+    }
+    body::-webkit-scrollbar-thumb {
+      background-color: #00bcd4;
+      border-radius: 6px;
+      border: 2px solid #1e1e1e;
+    }
+
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0 10px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-left: 5px solid var(--accent-color);
+      padding: 18px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 188, 212, 0.2);
+    }
+
+    h2 {
+      color: var(--accent-color);
+      margin-top: 0;
+      font-size: 1.4em;
+    }
+
+    p, li {
+      font-size: 1em;
+      line-height: 1.6;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    ul li {
+      margin-bottom: 8px;
+    }
+
+    @media screen and (max-width: 480px) {
+      h2 {
+        font-size: 1.3em;
+      }
+      p, li {
+        font-size: 0.95em;
+      }
+      .card {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="vi">
+    <div class="card">
+      <h2>Dịch Vụ Của Đặt Xe Nhanh</h2>
+      <p>Chúng tôi tự hào là đơn vị cung cấp dịch vụ vận chuyển uy tín, nhanh chóng và an toàn tại <strong>Hà Nội</strong>. Dù bạn đi công tác, du lịch hay cần xe hàng ngày, chúng tôi luôn sẵn sàng phục vụ.</p>
+      <ul>
+        <li>🚕 Đặt xe nhanh chóng chỉ với vài cú click</li>
+        <li>🛫 Đưa đón sân bay Nội Bài 24/7</li>
+        <li>⏰ Cho thuê xe theo giờ – linh hoạt, đúng nhu cầu</li>
+        <li>🏢 Xe hợp đồng cho công ty, tổ chức – chuyên nghiệp & đúng giờ</li>
+        <li>🧳 Chuyến đi liên tỉnh với chi phí minh bạch</li>
+        <li>🤝 Hỗ trợ khách hàng tận tâm qua Zalo, Facebook và hotline</li>
+      </ul>
+      <p>👉 Tài xế thân thiện, xe đời mới, định vị chính xác, giá rõ ràng.</p>
+      <p>💬 Đặt xe ngay hôm nay để trải nghiệm hành trình tiện nghi và an toàn!</p>
+    </div>
+  </div>
+
+  <div class="container" id="en" style="display: none;">
+    <div class="card">
+      <h2>Our Services</h2>
+      <p>We take pride in delivering reliable, fast, and safe transportation services in <strong>Hanoi</strong>. Whether you're traveling for business, leisure, or daily needs – we're here for you.</p>
+      <ul>
+        <li>🚕 Quick ride booking in just a few clicks</li>
+        <li>🛫 24/7 Noi Bai Airport Pickup & Drop-off</li>
+        <li>⏰ Hourly car rental – flexible to your needs</li>
+        <li>🏢 Corporate car contracts – punctual & professional</li>
+        <li>🧳 Interprovincial rides with transparent pricing</li>
+        <li>🤝 Dedicated support via Zalo, Facebook, and hotline</li>
+      </ul>
+      <p>👉 Friendly drivers, new cars, GPS tracking, clear pricing.</p>
+      <p>💬 Book your ride today and enjoy a comfortable and safe journey!</p>
+    </div>
+  </div>
+
+  <script>
+    function switchLanguage(lang) {
+      document.getElementById("vi").style.display = lang === "vi" ? "block" : "none";
+      document.getElementById("en").style.display = lang === "en" ? "block" : "none";
+    }
+
+    window.addEventListener("message", (event) => {
+      if (event.data?.type === "langChange") {
+        switchLanguage(event.data.lang);
+      }
+    });
+
+    const defaultLang = localStorage.getItem("lang") || "vi";
+    switchLanguage(defaultLang);
+
+    function sendHeight() {
+      const height = document.body.scrollHeight;
+      window.parent.postMessage({ type: 'iframeHeight', height: height }, '*');
+    }
+
+    window.addEventListener("load", sendHeight);
+    window.addEventListener("resize", sendHeight);
+  </script>
+</body>
+</html>
