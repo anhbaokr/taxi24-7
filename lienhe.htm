@@ -143,5 +143,16 @@
 
     </div>
   </div>
+   <script>
+  function sendHeight() {
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ type: "setHeight", height: height, target: "lienhe" }, "*");
+  }
+
+  // Gửi chiều cao khi load
+  window.addEventListener("load", sendHeight);
+  // Gửi lại khi resize hoặc nội dung thay đổi
+  window.addEventListener("resize", sendHeight);
+</script>
 </body>
 </html>
