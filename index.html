@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Taxi 24H - Tính cước phí</title>
-  <!-- Google Maps API (đã thêm key của bạn) -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&libraries=places,geometry"></script>
   <style>
     body {
       background-color: #121212;
@@ -45,8 +43,8 @@
 </head>
 <body>
   <h1>🚖 Tính Cước Phí Taxi 24H</h1>
-  <input id="from" type="text" placeholder="📍 Điểm đón" autocomplete="off">
-  <input id="to" type="text" placeholder="🏁 Điểm đến" autocomplete="off">
+  <input id="from" type="text" placeholder="📍 Điểm đón">
+  <input id="to" type="text" placeholder="🏁 Điểm đến">
   <button onclick="calculateDistance()">Tính Cước Phí</button>
   <div id="result"></div>
 
@@ -77,7 +75,7 @@
         if (status === 'OK') {
           const distanceValue = response.rows[0].elements[0].distance.value;
           const distanceKm = distanceValue / 1000;
-          const cost = Math.round(distanceKm * 12000); // Ví dụ 12.000đ/km
+          const cost = Math.round(distanceKm * 12000);
           document.getElementById("result").innerText =
             `📏 Khoảng cách: ${distanceKm.toFixed(2)} km\n💰 Cước phí ước tính: ${cost.toLocaleString()} đ`;
         } else {
@@ -85,8 +83,12 @@
         }
       });
     }
-
-    window.onload = initAutocomplete;
   </script>
+
+  <!-- Thêm callback và async defer -->
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&libraries=places&callback=initAutocomplete"
+    async defer></script>
 </body>
 </html>
+
