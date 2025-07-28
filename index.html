@@ -439,44 +439,138 @@
     });
  </script>
 
+<script>
+  function calculateDistanceAndPrice() {
+    const origin = document.getElementById("from").value;
+    const destination = document.getElementById("to").value;
+    const isRoundtrip = document.getElementById("roundtrip").checked;
+    const hasBot = document.getElementById("botFee").checked;
 
-  <script>
-    function calculateDistanceAndPrice() {
-      const origin = document.getElementById("from").value;
-      const destination = document.getElementById("to").value;
-      const isRoundtrip = document.getElementById("roundtrip").checked;
-      const hasBot = document.getElementById("botFee").checked;
+    try {
       const service = new google.maps.DistanceMatrixService();
+
       service.getDistanceMatrix({
         origins: [origin],
         destinations: [destination],
         travelMode: 'DRIVING',
         unitSystem: google.maps.UnitSystem.METRIC
       }, (response, status) => {
-        if (status === 'OK') {
-          const result = response.rows[0].elements[0];
-          const distanceInKm = result.distance.value / 1000;
-          document.getElementById("distance-text").innerText = distanceInKm.toFixed(2) + " km";
-          const basePrice = isRoundtrip ? 9_000 : 12_000;
-          let price = distanceInKm * basePrice;
-          if (hasBot) {
-            price += isRoundtrip ? 100_000 : 50_000;
-          }
-          document.getElementById("price-text").innerText = price.toLocaleString("vi-VN") + " đ";
-        } else {
-          document.getElementById("distance-text").innerText = "Không thể tính toán";
+        if (status !== 'OK' || !response || !response.rows || !response.rows[0].elements[0]) {
+          showCopyAlert("❌ Không thể kết nối Google Maps. Vui lòng thử lại sau.");
+          document.getElementById("distance-text").innerText = "--";
           document.getElementById("price-text").innerText = "--";
+          return;
         }
+
+        const result = response.rows[0].elements[0];
+
+        if (result.status !== "OK") {
+          showCopyAlert("❌ Không tìm thấy tuyến đường phù hợp.");
+          document.getElementById("distance-text").innerText = "--";
+          document.getElementById("price-text").innerText = "--";
+          return;
+        }
+
+        const distanceInKm = result.distance.value / 1000;
+        document.getElementById("distance-text").innerText = distanceInKm.toFixed(2) + " km";
+
+        const basePrice = isRoundtrip ? 9000 : 12000;
+        let price = distanceInKm * basePrice;
+
+        if (hasBot) {
+          price += isRoundtrip ? 100000 : 50000;
+        }
+
+        document.getElementById("price-text").innerText = price.toLocaleString("vi-VN") + " đ";
+      });
+    } catch (error) {
+      showCopyAlert("❌ Lỗi Google Maps API: " + error.message);
+      document.getElementById("distance-text").innerText = "--";
+      document.getElementById("price-text").innerText = "--";
+    }
+  }
+
+  document.getElementById("from").addEventListener("blur", calculateDistanceAndPrice);
+  document.getElementById("to").addEventListener("blur", calculateDistanceAndPrice);
+  document.getElementById("roundtrip").addEventListener("change", calculateDistanceAndPrice);
+  document.getElementById("botFee").addEventListener("change", calculateDistanceAndPrice);
+</script>
+
+<!-- ✅ Hàm khởi tạo bản đồ & autocomplete -->
+<script>
+  function initMap() {
+    console.log("Google Maps API loaded.");
+
+    const fromInput = document.getElementById("from");
+    const toInput = document.getElementById("to");
+
+    if (fromInput && toInput && google.maps.places) {
+      new google.maps.places.Autocomplete(fromInput, {
+        types: ['geocode'],
+        componentRestrictions: { country: 'vn' }
+      });
+
+      new google.maps.places.Autocomplete(toInput, {
+        types: ['geocode'],
+        componentRestrictions: { country: 'vn' }
       });
     }
+  }
+</script>
 
-    document.getElementById("from").addEventListener("blur", calculateDistanceAndPrice);
-    document.getElementById("to").addEventListener("blur", calculateDistanceAndPrice);
-    document.getElementById("roundtrip").addEventListener("change", calculateDistanceAndPrice);
-    document.getElementById("botFee").addEventListener("change", calculateDistanceAndPrice);
-  </script>
+<!-- ✅ Bắt lỗi nếu không tải được Maps -->
+<script>
+  window.onerror = function (message, source, lineno, colno, error) {
+    if (message.includes("Google Maps JavaScript API")) {
+      const warning = "⚠️ Không tải được Google Maps API. Vui lòng kiểm tra lại.";
+      document.getElementById("from").placeholder = warning;
+      document.getElementById("to").placeholder = warning;
+    }
+  };
+</script>
+<script>
+  function initAutocomplete() {
+    const fromInput = document.getElementById('from');
+    const toInput = document.getElementById('to');
 
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&callback=()=>{}"></script>
+    new google.maps.places.Autocomplete(fromInput, {
+      types: ['geocode'],
+      componentRestrictions: { country: 'vn' }
+    });
 
+    new google.maps.places.Autocomplete(toInput, {
+      types: ['geocode'],
+      componentRestrictions: { country: 'vn' }
+    });
+  }
+</script>
+<script
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&callback=initMap&libraries=places&loading=async"
+  async
+  defer>
+</script>
+
+<!-- ✅ Cảnh báo nếu key sai -->
+<script>
+  window.gm_authFailure = function() {
+    const fromInput = document.getElementById("from");
+    const toInput = document.getElementById("to");
+
+    if (fromInput) {
+      fromInput.value = "";
+      fromInput.placeholder = "⚠️ Google Maps API không hợp lệ!";
+      fromInput.style.border = "2px solid red";
+    }
+
+    if (toInput) {
+      toInput.value = "";
+      toInput.placeholder = "⚠️ Google Maps API không hợp lệ!";
+      toInput.style.border = "2px solid red";
+    }
+
+    alert("Lỗi xác thực Google Maps API: Vui lòng kiểm tra lại API Key.");
+  };
+</script>
 </body>
 </html>
+
