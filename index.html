@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taxi 24H</title>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&libraries=places,geometry"></script>
+  <script>
+    function initAutocomplete() {
+      const inputFrom = document.getElementById("from");
+      const inputTo = document.getElementById("to");
+      new google.maps.places.Autocomplete(inputFrom, { componentRestrictions: { country: "vn" } });
+      new google.maps.places.Autocomplete(inputTo, { componentRestrictions: { country: "vn" } });
+    }
+
+    function calculateDistance() {
+      const from = document.getElementById("from").value;
+      const to = document.getElementById("to").value;
+      const service = new google.maps.DistanceMatrixService();
+
+      service.getDistanceMatrix({
+        origins: [from],
+        destinations: [to],
+        travelMode: 'DRIVING',
+        unitSystem: google.maps.UnitSystem.METRIC
+      }, function(response, status) {
+        if (status === 'OK') {
+          const distance = response.rows[0].elements[0].distance.value / 1000; // in km
+          const cost = distance * 12_000; // Ví dụ 12.000đ/km
+          document.getElementById("result").innerText = `Khoảng cách: ${distance.toFixed(2)} km - Cước phí: ${cost.toLocaleString()}đ`;
+        } else {
+          document.getElementById("result").innerText = "Không tính được khoảng cách.";
+        }
+      });
+    }
+
+    window.onload = initAutocomplete;
+  </script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      padding: 20px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px 0;
+      width: 100%;
+      max-width: 400px;
+      display: block;
+    }
+    #result {
+      margin-top: 15px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Đặt Xe Taxi 24H</h1>
+  <input id="from" type="text" placeholder="Điểm đón" autocomplete="off" />
+  <input id="to" type="text" placeholder="Điểm đến" autocomplete="off" />
+  <button onclick="calculateDistance()">Tính cước phí</button>
+  <div id="result"></div>
+</body>
+</html>
