@@ -15,21 +15,23 @@
     h1 {
       color: #00d084;
     }
-    input, button {
+    gmpx-placeautocomplete {
+      display: block;
+      margin: 10px auto;
+      width: 90%;
+      max-width: 400px;
+      --gmpx-color-surface: #1e1e1e;
+      --gmpx-color-on-surface: #fff;
+      --gmpx-color-primary: #00d084;
+      --gmpx-color-outline: #444;
+    }
+    button {
       width: 90%;
       max-width: 400px;
       padding: 12px;
-      margin: 10px auto;
       font-size: 16px;
       border-radius: 8px;
       border: none;
-    }
-    input {
-      background-color: #1e1e1e;
-      color: #fff;
-      border: 1px solid #444;
-    }
-    button {
       background-color: #00d084;
       color: #000;
       cursor: pointer;
@@ -43,32 +45,31 @@
 </head>
 <body>
   <h1>🚖 Tính Cước Phí Taxi 24H</h1>
-  <input id="from" type="text" placeholder="📍 Điểm đón">
-  <input id="to" type="text" placeholder="🏁 Điểm đến">
+
+  <!-- Các trường gợi ý địa điểm -->
+  <gmpx-placeautocomplete id="from" placeholder="📍 Điểm đón" componentRestrictions='{"country": "vn"}'></gmpx-placeautocomplete>
+  <gmpx-placeautocomplete id="to" placeholder="🏁 Điểm đến" componentRestrictions='{"country": "vn"}'></gmpx-placeautocomplete>
+
   <button onclick="calculateDistance()">Tính Cước Phí</button>
   <div id="result"></div>
 
   <script>
-    function initAutocomplete() {
-      const inputFrom = document.getElementById("from");
-      const inputTo = document.getElementById("to");
-      new google.maps.places.Autocomplete(inputFrom, { componentRestrictions: { country: "vn" } });
-      new google.maps.places.Autocomplete(inputTo, { componentRestrictions: { country: "vn" } });
-    }
+    async function calculateDistance() {
+      const fromEl = document.getElementById("from");
+      const toEl = document.getElementById("to");
 
-    function calculateDistance() {
-      const from = document.getElementById("from").value;
-      const to = document.getElementById("to").value;
+      const fromPlace = await fromEl.getPlace();
+      const toPlace = await toEl.getPlace();
 
-      if (!from || !to) {
-        document.getElementById("result").innerText = "⚠️ Vui lòng nhập đầy đủ điểm đón và điểm đến.";
+      if (!fromPlace || !toPlace) {
+        document.getElementById("result").innerText = "⚠️ Vui lòng chọn đầy đủ điểm đón và điểm đến.";
         return;
       }
 
       const service = new google.maps.DistanceMatrixService();
       service.getDistanceMatrix({
-        origins: [from],
-        destinations: [to],
+        origins: [fromPlace.formattedAddress],
+        destinations: [toPlace.formattedAddress],
         travelMode: 'DRIVING',
         unitSystem: google.maps.UnitSystem.METRIC
       }, function(response, status) {
@@ -85,10 +86,13 @@
     }
   </script>
 
-  <!-- Thêm callback và async defer -->
+  <!-- Nạp Google Maps API và Web Component -->
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&libraries=places">
+  </script>
   <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&libraries=places&callback=initAutocomplete"
-    async defer></script>
+    type="module"
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&libraries=places&modules=place">
+  </script>
 </body>
 </html>
-
