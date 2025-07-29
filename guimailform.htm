@@ -1,0 +1,38 @@
+<form action="https://script.google.com/macros/s/AKfycbxPDdSZ0vePem6Tz5-5J4VM_87YW9TRkVGf6f55T-Vb_B-FoRlUi-9FTg1TNsUYQPIP9A/exec" method="post">
+  <input type="text"   name="name"    placeholder="Tên" required>
+  <input type="email"  name="email"   placeholder="Email" required>
+  <textarea            name="message" placeholder="Nội dung" required></textarea>
+  <button type="submit">Gửi</button>
+</form>
+
+
+
+<script>
+  const form = document.querySelector("form");
+  const success = document.getElementById("success");
+  const error = document.getElementById("error");
+
+  form.addEventListener("submit", function(e) {
+    e.preventDefault(); // Không reload trang
+
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+      method: "POST",
+      body: formData
+    })
+    .then(response => {
+      if (response.ok) {
+        success.style.display = "block";
+        error.style.display = "none";
+        form.reset();
+      } else {
+        throw new Error("Gửi không thành công");
+      }
+    })
+    .catch(() => {
+      success.style.display = "none";
+      error.style.display = "block";
+    });
+  });
+</script>
