@@ -1,14 +1,292 @@
-<form action="https://script.google.com/macros/s/AKfycbyBTa1gix8TVl5xM-_ygu8Cldl7XYaJN9M9-MjpMGWnOXKRbrQjIEGCAwFXYoMzy2xM0Q/exec"method="POST"
-      style="max-width:480px;margin:24px auto;font-family:sans-serif">
-  <h3>Liên hệ</h3>
-  <label>Họ tên<br>
-    <input type="text" name="name" required style="width:100%;padding:8px;margin:6px 0">
-  </label>
-  <label>Email<br>
-    <input type="email" name="email" required style="width:100%;padding:8px;margin:6px 0">
-  </label>
-  <label>Nội dung<br>
-    <textarea name="message" required rows="5" style="width:100%;padding:8px;margin:6px 0"></textarea>
-  </label>
-  <button type="submit" style="padding:10px 16px">Gửi</button>
-</form>
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Liên hệ</title>
+<style>
+  /* ====== Theme tokens ====== */
+  :root{
+    --brand:#2563eb;        /* màu thương hiệu (xanh) */
+    --brand-2:#1d4ed8;
+    --bg:#f6f7fb;
+    --text:#1f2937;
+    --muted:#6b7280;
+    --card:#ffffff;
+    --ring:rgba(37,99,235,.35);
+    --border:#e5e7eb;
+    --shadow:0 10px 30px rgba(2,6,23,.12);
+    --icon:#94a3b8;         /* màu icon mặc định */
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0b1020;
+      --text:#e5e7eb;
+      --muted:#9aa3b2;
+      --card:#0f152a;
+      --border:#1f2a44;
+      --ring:rgba(96,165,250,.35);
+      --shadow:0 12px 36px rgba(0,0,0,.45);
+      --icon:#8aa0b8;
+    }
+  }
+
+  /* ====== Base ====== */
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    color:var(--text);
+    background:
+      radial-gradient(1200px 700px at 10% -10%, rgba(37,99,235,.08), transparent 60%),
+      radial-gradient(1200px 700px at 110% 10%, rgba(99,102,241,.08), transparent 60%),
+      var(--bg);
+  }
+  .container{
+    max-width:560px;
+    margin:48px auto;
+    padding:0 16px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:28px 24px;
+    backdrop-filter:saturate(110%) blur(0.5px);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .card:hover{ transform:translateY(-1px); box-shadow:0 14px 42px rgba(2,6,23,.14); }
+  .title{
+    margin:0 0 10px;
+    font-size:22px; font-weight:700;
+    letter-spacing:.2px;
+    background:linear-gradient(90deg,var(--text),#4f46e5);
+    -webkit-background-clip:text; background-clip:text;
+    color:transparent;
+  }
+  .subtitle{ margin:0 0 18px; color:var(--muted); font-size:14px; }
+
+  /* ====== Form ====== */
+  form{ width:100%; }
+  label{ display:block; font-weight:600; margin:14px 0 6px; }
+  .req{ color:#ef4444; margin-left:4px; }
+
+  /* --- Input wrapper để chứa icon --- */
+  .input-wrap{
+    position:relative;
+  }
+  .input-wrap .icon{
+    position:absolute;
+    left:10px; top:50%;
+    transform:translateY(-50%);
+    width:18px; height:18px;
+    color:var(--icon);
+    pointer-events:none;
+    transition:color .15s ease, transform .15s ease;
+  }
+  .input-wrap.textarea .icon{
+    top:14px; transform:none; /* canh icon ở góc trên trái với textarea */
+  }
+
+  input[type="text"], input[type="email"], textarea{
+    width:100%;
+    border:1px solid var(--border);
+    background:transparent;
+    padding:10px 12px 10px 36px; /* chừa chỗ cho icon bên trái */
+    border-radius:10px;
+    outline:none;
+    color:var(--text);
+    transition:border-color .15s ease, box-shadow .15s ease, background-color .2s ease;
+  }
+  textarea{ resize:vertical; min-height:120px; padding-left:36px; }
+  input:focus, textarea:focus{
+    border-color:var(--brand);
+    box-shadow:0 0 0 4px var(--ring);
+    background:rgba(37,99,235,.02);
+  }
+  /* Đổi màu icon khi focus vào input/textarea phía sau */
+  .input-wrap:focus-within .icon{
+    color:var(--brand);
+    transform:translateY(-50%) scale(1.06);
+  }
+  .input-wrap.textarea:focus-within .icon{
+    transform:scale(1.06);
+  }
+
+  input::placeholder, textarea::placeholder{ color:rgba(107,114,128,.7); }
+
+  .actions{ margin-top:16px; display:flex; align-items:center; gap:12px; }
+  #submitBtn{
+    appearance:none; border:0; cursor:pointer;
+    padding:12px 18px; border-radius:12px;
+    font-weight:700; letter-spacing:.2px;
+    background:linear-gradient(180deg,var(--brand),var(--brand-2));
+    color:#fff; box-shadow:0 8px 20px rgba(37,99,235,.25);
+    transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  }
+  #submitBtn:hover{ transform:translateY(-1px); box-shadow:0 10px 24px rgba(37,99,235,.28); }
+  #submitBtn:active{ transform:translateY(0); }
+  #submitBtn:disabled{ opacity:.65; cursor:not-allowed; transform:none; box-shadow:none; }
+
+  #msg{
+    min-height:20px;
+    color:var(--muted);
+    font-size:14px;
+    margin:4px 2px 2px;
+  }
+
+  /* ====== Overlay (fade-in + card glass) ====== */
+  #sendingOverlay{
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(3,8,23,.45);
+    z-index:9999;
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .28s ease, visibility .28s ease;
+    backdrop-filter: blur(2px);
+  }
+  #sendingOverlay.active{
+    opacity:1; visibility:visible; pointer-events:auto;
+  }
+  .overlay-card{
+    background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.82));
+    border:1px solid rgba(255,255,255,.65);
+    border-radius:14px;
+    box-shadow:0 18px 60px rgba(0,0,0,.25);
+    padding:18px 20px;
+    min-width:280px;
+    display:flex; align-items:center; gap:12px;
+    transform:translateY(6px) scale(.985);
+    transition:transform .28s ease;
+  }
+  #sendingOverlay.active .overlay-card{ transform:translateY(0) scale(1); }
+  @media (prefers-color-scheme:dark){
+    .overlay-card{
+      background:linear-gradient(180deg, rgba(17,24,39,.9), rgba(17,24,39,.82));
+      border:1px solid rgba(148,163,184,.25);
+    }
+  }
+  .spinner{
+    width:22px; height:22px;
+    border:3px solid rgba(148,163,184,.35);
+    border-top-color:var(--brand);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg);} }
+  .overlay-text{ font-weight:600; color:var(--text); }
+
+  /* Animated dots (tuỳ chọn) */
+  .dots::after{ content:''; animation:dots 1.2s steps(4, jump-none) infinite; display:inline-block; width:1ch; overflow:hidden; }
+  @keyframes dots{ 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} 100%{content:''} }
+
+  @media (prefers-reduced-motion:reduce){
+    *{ animation:none !important; transition:none !important }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h3 class="title">Liên hệ</h3>
+      <p class="subtitle">Điền thông tin và nhấn <strong>Gửi</strong>. Chúng tôi sẽ phản hồi sớm nhất có thể.</p>
+
+      <div id="msg" role="status" aria-live="polite"></div>
+
+      <!-- Hidden iframe để submit nền -->
+      <iframe name="hidden_iframe" id="hidden_iframe" style="display:none"></iframe>
+
+      <form
+        action="https://script.google.com/macros/s/AKfycbxkXg_cAeCc4BToEM6vTEg7UFki1unO5afc7WpI3xhg6SoiM6h6Hf9zuZ-_xPNj8SIKGQ/exec"
+        method="POST"
+        target="hidden_iframe"
+        onsubmit="return handleSubmit(this)"
+        autocomplete="on">
+        
+        <label for="name">Họ tên <span class="req" aria-hidden="true">*</span></label>
+        <div class="input-wrap">
+          <!-- Icon user -->
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm8 8a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <input type="text" id="name" name="name" placeholder="Nguyễn Văn A" required autocomplete="name">
+        </div>
+
+        <label for="email">Email <span class="req" aria-hidden="true">*</span></label>
+        <div class="input-wrap">
+          <!-- Icon mail -->
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm0 0 8 6 8-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <input type="email" id="email" name="email" placeholder="ban@domain.com" required autocomplete="email">
+        </div>
+
+        <label for="message">Nội dung <span class="req" aria-hidden="true">*</span></label>
+        <div class="input-wrap textarea">
+          <!-- Icon message -->
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21 12a8 8 0 0 1-8 8H7l-4 3V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <textarea id="message" name="message" placeholder="Bạn cần hỗ trợ điều gì?" required></textarea>
+        </div>
+
+        <div class="actions">
+          <button type="submit" id="submitBtn">Gửi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div id="sendingOverlay" aria-hidden="true">
+    <div class="overlay-card">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="overlay-text" id="overlayText" aria-live="polite">Đang gửi…</div>
+    </div>
+  </div>
+
+<script>
+  // ===== Cấu hình dòng chữ trên overlay =====
+  var TARGET_SERVICE = 'Taxi24h.online'; // đổi tên dịch vụ tại đây
+  var overlayTimer = null;
+
+  function showOverlay(customText){
+    var overlay = document.getElementById('sendingOverlay');
+    var textEl  = document.getElementById('overlayText');
+    var msg = customText || ('Đang gửi Email tới ' + TARGET_SERVICE);
+    if(textEl){
+      textEl.textContent = msg;
+      textEl.classList.add('dots'); // xoá nếu không thích hiệu ứng ba chấm
+    }
+    if(overlay) overlay.classList.add('active');
+  }
+  function hideOverlay(){
+    var overlay = document.getElementById('sendingOverlay');
+    if(overlay) overlay.classList.remove('active');
+  }
+
+  // Khi bấm gửi: báo "Đang gửi…" nhỏ + khoá nút, 3 giây sau bật overlay
+  function handleSubmit(form){
+    var msg = document.getElementById('msg');
+    var btn = document.getElementById('submitBtn');
+    if(msg){ msg.style.color='var(--muted)'; msg.textContent='Đang gửi…'; }
+    if(btn){ btn.disabled=true; btn.style.opacity=.75; }
+    overlayTimer = setTimeout(function(){ showOverlay(); }, 3000);
+    return true; // tiếp tục submit
+  }
+
+  // Khi iframe load xong: coi như đã phản hồi → tắt overlay, mở nút, dọn trạng thái
+  document.getElementById('hidden_iframe').addEventListener('load', function(){
+    if(overlayTimer){ clearTimeout(overlayTimer); overlayTimer=null; }
+    hideOverlay();
+    var btn = document.getElementById('submitBtn');
+    if(btn){ btn.disabled=false; btn.style.opacity=1; }
+    var msg = document.getElementById('msg');
+    if(msg){ msg.textContent=''; }
+    if(btn && btn.form) btn.form.reset();
+  });
+</script>
+</body>
+</html>
