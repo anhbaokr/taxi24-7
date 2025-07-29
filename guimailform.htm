@@ -1,38 +1,15 @@
-<form action="https://script.google.com/macros/s/AKfycbxPDdSZ0vePem6Tz5-5J4VM_87YW9TRkVGf6f55T-Vb_B-FoRlUi-9FTg1TNsUYQPIP9A/exec" method="post">
-  <input type="text"   name="name"    placeholder="Tên" required>
-  <input type="email"  name="email"   placeholder="Email" required>
-  <textarea            name="message" placeholder="Nội dung" required></textarea>
-  <button type="submit">Gửi</button>
+<form action="https://script.google.com/macros/s/AKfycbz_YtAo1sG4M6SEQDTpyL6Oy_8RcJl2qwDOmPSZ1BiZnY0opaoTiErhR4jKXyFBb381Xg/exec"
+      method="POST"
+      style="max-width:480px;margin:24px auto;font-family:sans-serif">
+  <h3>Liên hệ</h3>
+  <label>Họ tên<br>
+    <input type="text" name="name" required style="width:100%;padding:8px;margin:6px 0">
+  </label>
+  <label>Email<br>
+    <input type="email" name="email" required style="width:100%;padding:8px;margin:6px 0">
+  </label>
+  <label>Nội dung<br>
+    <textarea name="message" required rows="5" style="width:100%;padding:8px;margin:6px 0"></textarea>
+  </label>
+  <button type="submit" style="padding:10px 16px">Gửi</button>
 </form>
-
-
-
-<script>
-  const form = document.querySelector("form");
-  const success = document.getElementById("success");
-  const error = document.getElementById("error");
-
-  form.addEventListener("submit", function(e) {
-    e.preventDefault(); // Không reload trang
-
-    const formData = new FormData(form);
-
-    fetch(form.action, {
-      method: "POST",
-      body: formData
-    })
-    .then(response => {
-      if (response.ok) {
-        success.style.display = "block";
-        error.style.display = "none";
-        form.reset();
-      } else {
-        throw new Error("Gửi không thành công");
-      }
-    })
-    .catch(() => {
-      success.style.display = "none";
-      error.style.display = "block";
-    });
-  });
-</script>
