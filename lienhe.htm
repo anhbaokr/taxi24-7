@@ -7,122 +7,82 @@
 <style>
   /* ====== Theme tokens ====== */
   :root{
-    --brand:#2563eb;        /* màu thương hiệu (xanh) */
-    --brand-2:#1d4ed8;
-    --bg:#f6f7fb;
-    --text:#1f2937;
-    --muted:#6b7280;
-    --card:#ffffff;
-    --ring:rgba(37,99,235,.35);
-    --border:#e5e7eb;
-    --shadow:0 10px 30px rgba(2,6,23,.12);
-    --icon:#94a3b8;         /* màu icon mặc định */
+    --brand:#2563eb; --brand-2:#1d4ed8;
+    --bg:#f6f7fb; --text:#1f2937; --muted:#6b7280;
+    --card:#ffffff; --ring:rgba(37,99,235,.35); --border:#e5e7eb;
+    --shadow:0 10px 30px rgba(2,6,23,.12); --icon:#94a3b8;
+    --ok:#10b981; --err:#ef4444;
   }
   @media (prefers-color-scheme:dark){
     :root{
-      --bg:#0b1020;
-      --text:#e5e7eb;
-      --muted:#9aa3b2;
-      --card:#0f152a;
-      --border:#1f2a44;
-      --ring:rgba(96,165,250,.35);
-      --shadow:0 12px 36px rgba(0,0,0,.45);
+      --bg:#0b1020; --text:#e5e7eb; --muted:#9aa3b2; --card:#0f152a;
+      --border:#1f2a44; --ring:rgba(96,165,250,.35); --shadow:0 12px 36px rgba(0,0,0,.45);
       --icon:#8aa0b8;
     }
   }
 
-  /* ====== Base ====== */
-  *{box-sizing:border-box}
-  html,body{height:100%}
+  /* ====== Base & Layout ====== */
+  *{box-sizing:border-box} html,body{height:100%}
   body{
-    margin:0;
-    font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-    color:var(--text);
+    margin:0; font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; color:var(--text);
     background:
       radial-gradient(1200px 700px at 10% -10%, rgba(37,99,235,.08), transparent 60%),
       radial-gradient(1200px 700px at 110% 10%, rgba(99,102,241,.08), transparent 60%),
       var(--bg);
   }
-  .container{
-    max-width:560px;
-    margin:48px auto;
-    padding:0 16px;
-  }
+  .container{ max-width:560px; margin:48px auto; padding:0 16px; }
   .card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:16px;
-    box-shadow:var(--shadow);
-    padding:28px 24px;
-    backdrop-filter:saturate(110%) blur(0.5px);
+    background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow);
+    padding:28px 24px; backdrop-filter:saturate(110%) blur(.5px);
     transition:transform .2s ease, box-shadow .2s ease;
   }
   .card:hover{ transform:translateY(-1px); box-shadow:0 14px 42px rgba(2,6,23,.14); }
   .title{
-    margin:0 0 10px;
-    font-size:22px; font-weight:700;
-    letter-spacing:.2px;
+    margin:0 0 10px; font-size:22px; font-weight:700; letter-spacing:.2px;
     background:linear-gradient(90deg,var(--text),#4f46e5);
-    -webkit-background-clip:text; background-clip:text;
-    color:transparent;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
   }
   .subtitle{ margin:0 0 18px; color:var(--muted); font-size:14px; }
 
   /* ====== Form ====== */
   form{ width:100%; }
   label{ display:block; font-weight:600; margin:14px 0 6px; }
-  .req{ color:#ef4444; margin-left:4px; }
+  .req{ color:var(--err); margin-left:4px; }
 
-  /* --- Input wrapper để chứa icon --- */
-  .input-wrap{
-    position:relative;
-  }
+  .input-wrap{ position:relative; }
   .input-wrap .icon{
-    position:absolute;
-    left:10px; top:50%;
-    transform:translateY(-50%);
-    width:18px; height:18px;
-    color:var(--icon);
-    pointer-events:none;
-    transition:color .15s ease, transform .15s ease;
+    position:absolute; left:10px; top:50%; transform:translateY(-50%);
+    width:18px; height:18px; color:var(--icon); pointer-events:none; transition:color .15s ease, transform .15s ease;
   }
-  .input-wrap.textarea .icon{
-    top:14px; transform:none; /* canh icon ở góc trên trái với textarea */
+  .input-wrap.textarea .icon{ top:14px; transform:none; }
+
+  /* Status icon (bên phải) */
+  .status-icon{
+    position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    font-size:18px; line-height:1; display:none; pointer-events:none;
   }
+  .input-wrap.valid .status-icon,
+  .input-wrap.invalid .status-icon{ display:inline-block; }
+  .input-wrap.valid .status-icon{ color:var(--ok); }
+  .input-wrap.invalid .status-icon{ color:var(--err); }
+  .input-wrap.valid .status-icon::before{ content:'✅'; }
+  .input-wrap.invalid .status-icon::before{ content:'⚠️'; }
 
   input[type="text"], input[type="email"], textarea{
-    width:100%;
-    border:1px solid var(--border);
-    background:transparent;
-    padding:10px 12px 10px 36px; /* chừa chỗ cho icon bên trái */
-    border-radius:10px;
-    outline:none;
-    color:var(--text);
+    width:100%; border:1px solid var(--border); background:transparent;
+    padding:10px 36px 10px 36px; border-radius:10px; outline:none; color:var(--text);
     transition:border-color .15s ease, box-shadow .15s ease, background-color .2s ease;
   }
-  textarea{ resize:vertical; min-height:120px; padding-left:36px; }
-  input:focus, textarea:focus{
-    border-color:var(--brand);
-    box-shadow:0 0 0 4px var(--ring);
-    background:rgba(37,99,235,.02);
-  }
-  /* Đổi màu icon khi focus vào input/textarea phía sau */
-  .input-wrap:focus-within .icon{
-    color:var(--brand);
-    transform:translateY(-50%) scale(1.06);
-  }
-  .input-wrap.textarea:focus-within .icon{
-    transform:scale(1.06);
-  }
-
+  textarea{ resize:vertical; min-height:120px; }
+  input:focus, textarea:focus{ border-color:var(--brand); box-shadow:0 0 0 4px var(--ring); background:rgba(37,99,235,.02); }
+  .input-wrap:focus-within .icon{ color:var(--brand); transform:translateY(-50%) scale(1.06); }
+  .input-wrap.textarea:focus-within .icon{ transform:scale(1.06); }
   input::placeholder, textarea::placeholder{ color:rgba(107,114,128,.7); }
 
   .actions{ margin-top:16px; display:flex; align-items:center; gap:12px; }
   #submitBtn{
-    appearance:none; border:0; cursor:pointer;
-    padding:12px 18px; border-radius:12px;
-    font-weight:700; letter-spacing:.2px;
-    background:linear-gradient(180deg,var(--brand),var(--brand-2));
+    appearance:none; border:0; cursor:pointer; padding:12px 18px; border-radius:12px;
+    font-weight:700; letter-spacing:.2px; background:linear-gradient(180deg,var(--brand),var(--brand-2));
     color:#fff; box-shadow:0 8px 20px rgba(37,99,235,.25);
     transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
   }
@@ -130,61 +90,53 @@
   #submitBtn:active{ transform:translateY(0); }
   #submitBtn:disabled{ opacity:.65; cursor:not-allowed; transform:none; box-shadow:none; }
 
-  #msg{
-    min-height:20px;
-    color:var(--muted);
-    font-size:14px;
-    margin:4px 2px 2px;
+  #msg{ min-height:20px; color:var(--muted); font-size:14px; margin:4px 2px 2px; }
+
+  /* Trạng thái hợp lệ / không hợp lệ */
+  .input-wrap.invalid input, .input-wrap.invalid textarea{ border-color:var(--err); box-shadow:0 0 0 4px rgba(239,68,68,.18); }
+  .input-wrap.valid input, .input-wrap.valid textarea{ border-color:var(--ok); box-shadow:0 0 0 4px rgba(16,185,129,.18); }
+  .input-wrap.invalid .icon{ color:var(--err) !important; }
+  .input-wrap.valid .icon{ color:var(--ok) !important; }
+
+  .field-hint{ margin:6px 2px 0; font-size:13px; line-height:1.35; color:var(--err); min-height:1.2em; }
+
+  /* Gợi ý sửa domain */
+  .suggestion{ margin:6px 2px 0; font-size:13px; color:var(--muted); }
+  .suggestion .pill{
+    display:inline-flex; align-items:center; gap:8px; padding:6px 10px;
+    border:1px solid var(--border); border-radius:999px; background:rgba(37,99,235,.06);
+  }
+  .suggestion .pill button{
+    appearance:none; border:0; background:transparent; color:var(--brand);
+    font-weight:600; cursor:pointer; padding:0; text-decoration:underline;
   }
 
   /* ====== Overlay (fade-in + card glass) ====== */
   #sendingOverlay{
-    position:fixed; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    background:rgba(3,8,23,.45);
-    z-index:9999;
-    opacity:0; visibility:hidden; pointer-events:none;
-    transition:opacity .28s ease, visibility .28s ease;
-    backdrop-filter: blur(2px);
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    background:rgba(3,8,23,.45); z-index:9999; opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .28s ease, visibility .28s ease; backdrop-filter: blur(2px);
   }
-  #sendingOverlay.active{
-    opacity:1; visibility:visible; pointer-events:auto;
-  }
+  #sendingOverlay.active{ opacity:1; visibility:visible; pointer-events:auto; }
   .overlay-card{
     background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.82));
-    border:1px solid rgba(255,255,255,.65);
-    border-radius:14px;
-    box-shadow:0 18px 60px rgba(0,0,0,.25);
-    padding:18px 20px;
-    min-width:280px;
-    display:flex; align-items:center; gap:12px;
-    transform:translateY(6px) scale(.985);
-    transition:transform .28s ease;
+    border:1px solid rgba(255,255,255,.65); border-radius:14px; box-shadow:0 18px 60px rgba(0,0,0,.25);
+    padding:18px 20px; min-width:280px; display:flex; align-items:center; gap:12px;
+    transform:translateY(6px) scale(.985); transition:transform .28s ease;
   }
   #sendingOverlay.active .overlay-card{ transform:translateY(0) scale(1); }
   @media (prefers-color-scheme:dark){
-    .overlay-card{
-      background:linear-gradient(180deg, rgba(17,24,39,.9), rgba(17,24,39,.82));
-      border:1px solid rgba(148,163,184,.25);
-    }
+    .overlay-card{ background:linear-gradient(180deg, rgba(17,24,39,.9), rgba(17,24,39,.82)); border:1px solid rgba(148,163,184,.25); }
   }
-  .spinner{
-    width:22px; height:22px;
-    border:3px solid rgba(148,163,184,.35);
-    border-top-color:var(--brand);
-    border-radius:50%;
-    animation:spin .8s linear infinite;
-  }
+  .spinner{ width:22px; height:22px; border:3px solid rgba(148,163,184,.35); border-top-color:var(--brand);
+    border-radius:50%; animation:spin .8s linear infinite; }
   @keyframes spin{ to{ transform:rotate(360deg);} }
   .overlay-text{ font-weight:600; color:var(--text); }
 
-  /* Animated dots (tuỳ chọn) */
   .dots::after{ content:''; animation:dots 1.2s steps(4, jump-none) infinite; display:inline-block; width:1ch; overflow:hidden; }
   @keyframes dots{ 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} 100%{content:''} }
 
-  @media (prefers-reduced-motion:reduce){
-    *{ animation:none !important; transition:none !important }
-  }
+  @media (prefers-reduced-motion:reduce){ *{ animation:none !important; transition:none !important } }
 </style>
 </head>
 <body>
@@ -206,31 +158,41 @@
         autocomplete="on">
         
         <label for="name">Họ tên <span class="req" aria-hidden="true">*</span></label>
-        <div class="input-wrap">
+        <div class="input-wrap" id="nameWrap">
           <!-- Icon user -->
           <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm8 8a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <input type="text" id="name" name="name" placeholder="Nguyễn Văn A" required autocomplete="name">
+          <span class="status-icon" aria-hidden="true"></span>
         </div>
+        <p id="nameHint" class="field-hint" aria-live="polite"></p>
 
         <label for="email">Email <span class="req" aria-hidden="true">*</span></label>
-        <div class="input-wrap">
+        <div class="input-wrap" id="emailWrap">
           <!-- Icon mail -->
           <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm0 0 8 6 8-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <input type="email" id="email" name="email" placeholder="ban@domain.com" required autocomplete="email">
+          <input type="email" id="email" name="email"
+                 placeholder="ban@domain.com"
+                 required autocomplete="email"
+                 pattern="^[^\s@]+@[^\s@]+\.[^\s@]{2,}$">
+          <span id="emailStatus" class="status-icon" aria-hidden="true"></span>
         </div>
+        <p id="emailHint" class="field-hint" aria-live="polite"></p>
+        <div id="emailSuggest" class="suggestion" aria-live="polite"></div>
 
         <label for="message">Nội dung <span class="req" aria-hidden="true">*</span></label>
-        <div class="input-wrap textarea">
+        <div class="input-wrap textarea" id="messageWrap">
           <!-- Icon message -->
           <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M21 12a8 8 0 0 1-8 8H7l-4 3V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <textarea id="message" name="message" placeholder="Bạn cần hỗ trợ điều gì?" required></textarea>
+          <span class="status-icon" aria-hidden="true"></span>
         </div>
+        <p id="messageHint" class="field-hint" aria-live="polite"></p>
 
         <div class="actions">
           <button type="submit" id="submitBtn">Gửi</button>
@@ -248,7 +210,7 @@
   </div>
 
 <script>
-  // ===== Cấu hình dòng chữ trên overlay =====
+  /* ========= Cấu hình overlay ========= */
   var TARGET_SERVICE = 'Taxi24h.online'; // đổi tên dịch vụ tại đây
   var overlayTimer = null;
 
@@ -256,10 +218,7 @@
     var overlay = document.getElementById('sendingOverlay');
     var textEl  = document.getElementById('overlayText');
     var msg = customText || ('Đang gửi Email tới ' + TARGET_SERVICE);
-    if(textEl){
-      textEl.textContent = msg;
-      textEl.classList.add('dots'); // xoá nếu không thích hiệu ứng ba chấm
-    }
+    if(textEl){ textEl.textContent = msg; textEl.classList.add('dots'); }
     if(overlay) overlay.classList.add('active');
   }
   function hideOverlay(){
@@ -267,25 +226,194 @@
     if(overlay) overlay.classList.remove('active');
   }
 
-  // Khi bấm gửi: báo "Đang gửi…" nhỏ + khoá nút, 3 giây sau bật overlay
-  function handleSubmit(form){
-    var msg = document.getElementById('msg');
-    var btn = document.getElementById('submitBtn');
-    if(msg){ msg.style.color='var(--muted)'; msg.textContent='Đang gửi…'; }
-    if(btn){ btn.disabled=true; btn.style.opacity=.75; }
-    overlayTimer = setTimeout(function(){ showOverlay(); }, 3000);
-    return true; // tiếp tục submit
+  /* ========= Validate & gợi ý Email ========= */
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+  const MAX_EMAIL_LEN = 254, MAX_LOCAL_LEN = 64;
+
+  const COMMON_DOMAINS = [
+    'gmail.com','yahoo.com','outlook.com','hotmail.com','icloud.com',
+    'live.com','proton.me','protonmail.com','aol.com','yandex.com','zoho.com','msn.com','pm.me'
+  ];
+  const TYPO_MAP = {
+    'gmial.com':'gmail.com','gmai.com':'gmail.com','gnail.com':'gmail.com','gmaill.com':'gmail.com',
+    'yaho.com':'yahoo.com','yahho.com':'yahoo.com',
+    'hotnail.com':'hotmail.com','hotmai.com':'hotmail.com',
+    'outlok.com':'outlook.com','outllok.com':'outlook.com','outlook.con':'outlook.com',
+    'icloud.con':'icloud.com','icoud.com':'icloud.com'
+  };
+
+  const emailInput = document.getElementById('email');
+  const emailWrap  = document.getElementById('emailWrap');
+  const emailHint  = document.getElementById('emailHint');
+  const emailSuggest = document.getElementById('emailSuggest');
+
+  function levenshtein(a,b){
+    a = a.toLowerCase(); b = b.toLowerCase();
+    const m = a.length, n = b.length;
+    if (m===0) return n; if (n===0) return m;
+    const dp = Array(n+1).fill(0);
+    for (let j=0;j<=n;j++) dp[j]=j;
+    for (let i=1;i<=m;i++){
+      let prev=dp[0]; dp[0]=i;
+      for (let j=1;j<=n;j++){
+        const tmp=dp[j];
+        dp[j]=Math.min(dp[j]+1, dp[j-1]+1, prev + (a[i-1]===b[j-1]?0:1));
+        prev=tmp;
+      }
+    }
+    return dp[n];
   }
 
-  // Khi iframe load xong: coi như đã phản hồi → tắt overlay, mở nút, dọn trạng thái
+  function bestDomainSuggestion(domain){
+    if (!domain) return null;
+    const d = domain.toLowerCase();
+    if (TYPO_MAP[d]) return TYPO_MAP[d];
+    if (COMMON_DOMAINS.includes(d)) return null;
+    let best = null, bestDist = 3;
+    for (const cand of COMMON_DOMAINS){
+      const dist = levenshtein(d, cand);
+      if (dist < bestDist){ bestDist = dist; best = cand; if (dist===1) break; }
+    }
+    return (bestDist <= 2) ? best : null;
+  }
+
+  function renderSuggestion(sugDomain){
+    if (!emailSuggest) return;
+    if (!sugDomain){ emailSuggest.innerHTML = ''; return; }
+    emailSuggest.innerHTML = `
+      <div class="pill" role="note" aria-label="Gợi ý sửa domain">
+        Có phải bạn muốn dùng <strong>${sugDomain}</strong>?
+        <button type="button" id="applyDomainBtn" title="Bấm để sửa email sang ${sugDomain}">Sửa</button>
+      </div>
+    `;
+    const btn = document.getElementById('applyDomainBtn');
+    if (btn){
+      btn.addEventListener('click', function(){
+        const v = emailInput.value.trim();
+        const local = v.split('@')[0] || '';
+        emailInput.value = local + '@' + sugDomain;
+        validateEmail(true);
+      });
+    }
+  }
+
+  function validateEmail(showMessage){
+    if (!emailInput) return true;
+    let v = emailInput.value;
+    if (showMessage) v = v.trim();
+    emailInput.value = v;
+
+    let msg = '';
+    let suggestion = null;
+
+    if (v.length === 0){
+      // để 'required' xử lý
+    } else if (v.length > MAX_EMAIL_LEN){
+      msg = 'Email quá dài (tối đa 254 ký tự).';
+    } else if (!EMAIL_RE.test(v)){
+      msg = 'Email không đúng định dạng, ví dụ: ten@domain.com';
+    } else {
+      const [local, dom] = v.split('@');
+      if ((local||'').length > MAX_LOCAL_LEN){
+        msg = 'Phần tên hộp thư (trước @) quá dài (tối đa 64 ký tự).';
+      } else {
+        suggestion = bestDomainSuggestion(dom||'');
+      }
+    }
+
+    emailInput.setCustomValidity(msg);
+    if (emailWrap){
+      emailWrap.classList.toggle('invalid', !!msg);
+      emailWrap.classList.toggle('valid', !msg && v.length>0);
+    }
+    if (emailHint) emailHint.textContent = showMessage ? msg : '';
+    renderSuggestion(suggestion);
+
+    return !msg;
+  }
+
+  /* ========= Validate Name & Message (để hiện ✅/⚠️) ========= */
+  const nameInput = document.getElementById('name');
+  const nameWrap  = document.getElementById('nameWrap');
+  const nameHint  = document.getElementById('nameHint');
+
+  const messageInput = document.getElementById('message');
+  const messageWrap  = document.getElementById('messageWrap');
+  const messageHint  = document.getElementById('messageHint');
+
+  function validateName(showMessage){
+    const v = (nameInput.value || '').trim();
+    nameInput.value = v;
+    let msg = '';
+    if (v.length === 0){
+      // required sẽ báo
+    } else if (v.length < 3){
+      msg = 'Họ tên quá ngắn (tối thiểu 3 ký tự).';
+    }
+    nameInput.setCustomValidity(msg);
+    if (nameWrap){
+      nameWrap.classList.toggle('invalid', !!msg);
+      nameWrap.classList.toggle('valid', !msg && v.length>0);
+    }
+    if (nameHint) nameHint.textContent = showMessage ? msg : '';
+    return !msg;
+  }
+
+  function validateMessage(showMessage){
+    const v = (messageInput.value || '').trim();
+    messageInput.value = v;
+    let msg = '';
+    if (v.length === 0){
+      // required sẽ báo
+    } else if (v.length < 10){
+      msg = 'Vui lòng mô tả chi tiết hơn (tối thiểu 10 ký tự).';
+    }
+    messageInput.setCustomValidity(msg);
+    if (messageWrap){
+      messageWrap.classList.toggle('invalid', !!msg);
+      messageWrap.classList.toggle('valid', !msg && v.length>0);
+    }
+    if (messageHint) messageHint.textContent = showMessage ? msg : '';
+    return !msg;
+  }
+
+  /* ========= Sự kiện realtime ========= */
+  emailInput.addEventListener('input', function(){ emailInput.setCustomValidity(''); validateEmail(false); });
+  emailInput.addEventListener('blur',  function(){ validateEmail(true); });
+
+  nameInput.addEventListener('input', function(){ nameInput.setCustomValidity(''); validateName(false); });
+  nameInput.addEventListener('blur',  function(){ validateName(true); });
+
+  messageInput.addEventListener('input', function(){ messageInput.setCustomValidity(''); validateMessage(false); });
+  messageInput.addEventListener('blur',  function(){ validateMessage(true); });
+
+  /* ========= Submit + Overlay ========= */
+  function handleSubmit(form){
+    const okName = validateName(true);
+    const okEmail = validateEmail(true);
+    const okMsg = validateMessage(true);
+
+    if (!okName || !okEmail || !okMsg || !form.reportValidity()) return false;
+
+    var msg = document.getElementById('msg');
+    var btn = document.getElementById('submitBtn');
+    if (msg){ msg.style.color='var(--muted)'; msg.textContent='Đang gửi…'; }
+    if (btn){ btn.disabled=true; btn.style.opacity=.75; }
+    overlayTimer = setTimeout(function(){ showOverlay(); }, 3000);
+    return true;
+  }
+  window.handleSubmit = handleSubmit;
+
   document.getElementById('hidden_iframe').addEventListener('load', function(){
-    if(overlayTimer){ clearTimeout(overlayTimer); overlayTimer=null; }
+    if (overlayTimer){ clearTimeout(overlayTimer); overlayTimer=null; }
     hideOverlay();
     var btn = document.getElementById('submitBtn');
-    if(btn){ btn.disabled=false; btn.style.opacity=1; }
+    if (btn){ btn.disabled=false; btn.style.opacity=1; }
     var msg = document.getElementById('msg');
-    if(msg){ msg.textContent=''; }
-    if(btn && btn.form) btn.form.reset();
+    if (msg){ msg.textContent=''; }
+    if (btn && btn.form) btn.form.reset();
+    // reset trạng thái
+    validateName(false); validateEmail(false); validateMessage(false);
   });
 </script>
 </body>
