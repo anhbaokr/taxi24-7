@@ -1,0 +1,66 @@
+      <style>
+	  #origin, #destination {
+       width: 250px;
+       padding: 10px;
+       margin-bottom: 10px;
+   }
+   #distance {
+       margin-top: 10px;
+       font-weight: bold;
+   }
+   </style>
+   
+   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAZJ9Fx4BMaDwERAzMvznKPi7FRgTvuU8E&libraries=places&callback=initMap" async defer></script>
+      <input type="text" id="origin" placeholder="Điểm đi">
+   <input type="text" id="destination" placeholder="Điểm đến">
+   <div id="distance"></div>
+   
+   <script>
+      let originInput, destinationInput, distanceDiv;
+   let autocompleteOrigin, autocompleteDestination;
+
+   function initMap() {
+       originInput = document.getElementById('origin');
+       destinationInput = document.getElementById('destination');
+       distanceDiv = document.getElementById('distance');
+
+       // Khởi tạo Autocomplete cho điểm đi và điểm đến
+       autocompleteOrigin = new google.maps.places.Autocomplete(originInput);
+       autocompleteDestination = new google.maps.places.Autocomplete(destinationInput);
+
+       // Sự kiện khi chọn một địa điểm từ gợi ý
+       autocompleteOrigin.addListener('place_changed', calculateDistance);
+       autocompleteDestination.addListener('place_changed', calculateDistance);
+   }
+
+   function calculateDistance() {
+       const originPlace = autocompleteOrigin.getPlace();
+       const destinationPlace = autocompleteDestination.getPlace();
+
+       if (!originPlace.geometry || !destinationPlace.geometry) {
+           return;
+       }
+
+       const origin = {lat: originPlace.geometry.location.lat(), lng: originPlace.geometry.location.lng()};
+       const destination = {lat: destinationPlace.geometry.location.lat(), lng: destinationPlace.geometry.location.lng()};
+
+       const service = new google.maps.DistanceMatrixService();
+       service.getDistanceMatrix(
+           {
+               origins: [origin],
+               destinations: [destination],
+               travelMode: 'DRIVING', // hoặc WALKING, BICYCLING, TRANSIT
+               unitSystem: google.maps.UnitSystem.METRIC,
+           },
+           (response, status) => {
+               if (status === 'OK') {
+                   const distanceText = response.rows[0].elements[0].distance.text;
+                   const durationText = response.rows[0].elements[0].duration.text;
+                   distanceDiv.textContent = `Khoảng cách: ${distanceText}, Thời gian dự kiến: ${durationText}`;
+               } else {
+                   distanceDiv.textContent = 'Không thể tính khoảng cách.';
+               }
+           }
+       );
+   }
+   </script>
