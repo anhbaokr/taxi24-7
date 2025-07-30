@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Test Google Maps Key</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #status { padding: 10px; background:#f0f0f0; margin-bottom: 10px; }
+    #map { width: 100%; height: 300px; background:#eee; }
+    .row { margin: 10px 0; }
+    input { width: 100%; padding: 8px; }
+  </style>
+</head>
+<body>
+  <h3>Kiểm tra Google Maps API Key</h3>
+  <div id="status">Đang tải...</div>
+
+  <div class="row"><input id="from" placeholder="Điểm đi (Autocomplete)"></div>
+  <div class="row"><input id="to" placeholder="Điểm đến (Autocomplete)"></div>
+  <div id="map"></div>
+
+  <script>
+    function initMap() {
+      const st = document.getElementById('status');
+      st.textContent = 'Thư viện Maps đã tải OK ✔';
+
+      // Tạo map để xem còn hiện overlay lỗi không
+      const map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 10.776, lng: 106.695}, zoom: 12
+      });
+
+      // Autocomplete
+      const ac1 = new google.maps.places.Autocomplete(
+        document.getElementById('from'),
+        { componentRestrictions:{country:'vn'} }
+      );
+      const ac2 = new google.maps.places.Autocomplete(
+        document.getElementById('to'),
+        { componentRestrictions:{country:'vn'} }
+      );
+    }
+
+    window.initMap = initMap;
+  </script>
+
+  <!-- THAY YOUR_KEY_HERE bằng key đang dùng -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YAIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&callback=initMap&libraries=places&v=weekly&language=vi&region=VN" async defer></script>
+</body>
+</html>
