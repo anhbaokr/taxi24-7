@@ -1,105 +1,73 @@
 <!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Test Google Maps: Autocomplete + Distance</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 16px; }
-    .row { margin: 10px 0; }
-    input { width: 100%; padding: 10px; font-size: 16px; }
-    #map { width: 100%; height: 320px; background: #eee; border: 1px solid #ddd; margin-top: 12px; }
-    #status { margin-top: 10px; color: #333; background:#f7f7f7; padding: 8px; border:1px solid #e5e5e5; }
-  </style>
+<html>
+  <head>
+    <title>Gợi ý địa chỉ + Tính khoảng cách</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      input {
+        width: 300px;
+        margin-bottom: 10px;
+        padding: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>Nhập địa chỉ đi và đến:</h3>
+    <input id="origin" type="text" placeholder="Điểm đi" />
+    <input id="destination" type="text" placeholder="Điểm đến" />
+    <p id="distance"></p>
 
-  <script>
-    let originPlaceId = null, destinationPlaceId = null;
-    let calcTimer = null;
+    <script>
+      let autocompleteOrigin;
+      let autocompleteDestination;
+      let directionsService;
+      let directionsRenderer;
 
-    function initMap() {
-      // Tạo map để thấy nếu key bị từ chối (Google sẽ phủ overlay cảnh báo tại đây)
-      const map = new google.maps.Map(document.getElementById('map'), {
-        center: {lat: 10.776, lng: 106.695}, zoom: 12
-      });
+      function initMap() {
+        const originInput = document.getElementById("origin");
+        const destinationInput = document.getElementById("destination");
 
-      document.getElementById('status').textContent =
-        'Maps JS loaded ✔ version: ' + (google.maps && google.maps.version);
+        autocompleteOrigin = new google.maps.places.Autocomplete(originInput);
+        autocompleteDestination = new google.maps.places.Autocomplete(destinationInput);
 
-      // Autocomplete
-      const opts = { componentRestrictions: { country: 'vn' }, fields: ['place_id','formatted_address'] };
-      const fromEl = document.getElementById('from');
-      const toEl   = document.getElementById('to');
+        directionsService = new google.maps.DirectionsService();
+        directionsRenderer = new google.maps.DirectionsRenderer();
 
-      const acFrom = new google.maps.places.Autocomplete(fromEl, opts);
-      const acTo   = new google.maps.places.Autocomplete(toEl,   opts);
+        // Khi người dùng chọn xong 2 địa điểm
+        [autocompleteOrigin, autocompleteDestination].forEach((autocomplete) => {
+          autocomplete.addListener("place_changed", calculateDistance);
+        });
+      }
 
-      acFrom.addListener('place_changed', () => {
-        const p = acFrom.getPlace();
-        originPlaceId = p?.place_id || null;
-        if (p?.formatted_address) fromEl.value = p.formatted_address;
-        scheduleCalc();
-      });
+      function calculateDistance() {
+        const origin = document.getElementById("origin").value;
+        const destination = document.getElementById("destination").value;
 
-      acTo.addListener('place_changed', () => {
-        const p = acTo.getPlace();
-        destinationPlaceId = p?.place_id || null;
-        if (p?.formatted_address) toEl.value = p.formatted_address;
-        scheduleCalc();
-      });
-
-      // Người dùng gõ tay => bỏ place_id để lần sau dùng text
-      fromEl.addEventListener('input', () => { originPlaceId = null; scheduleCalc(); });
-      toEl.addEventListener('input',   () => { destinationPlaceId = null; scheduleCalc(); });
-    }
-
-    function scheduleCalc() {
-      clearTimeout(calcTimer);
-      calcTimer = setTimeout(calculate, 300); // debounce 300ms
-    }
-
-    function calculate() {
-      const fromTxt = document.getElementById('from').value.trim();
-      const toTxt   = document.getElementById('to').value.trim();
-      const out     = document.getElementById('status');
-
-      if (!fromTxt || !toTxt) { out.textContent = 'Nhập đầy đủ Điểm đi / Điểm đến để tính.'; return; }
-      if (!window.google?.maps) { out.textContent = 'Không tải được Google Maps. Kiểm tra key/API/Billing.'; return; }
-
-      const service = new google.maps.DistanceMatrixService();
-      const origins = originPlaceId ? [{ placeId: originPlaceId }] : [fromTxt];
-      const dests   = destinationPlaceId ? [{ placeId: destinationPlaceId }] : [toTxt];
-
-      service.getDistanceMatrix({
-        origins, destinations: dests,
-        travelMode: google.maps.TravelMode.DRIVING,
-        unitSystem: google.maps.UnitSystem.METRIC
-      }, (res, status) => {
-        if (status !== 'OK' || !res?.rows?.[0]?.elements?.[0]) {
-          out.textContent = 'Không tính được quãng đường. Kiểm tra key/API/Billing (status: ' + status + ').';
-          return;
+        if (origin && destination) {
+          directionsService.route(
+            {
+              origin: origin,
+              destination: destination,
+              travelMode: google.maps.TravelMode.DRIVING,
+            },
+            (response, status) => {
+              if (status === "OK") {
+                const distanceText = response.routes[0].legs[0].distance.text;
+                document.getElementById("distance").innerText = "Khoảng cách: " + distanceText;
+              } else {
+                console.error("Lỗi khi tính khoảng cách:", status);
+              }
+            }
+          );
         }
-        const e = res.rows[0].elements[0];
-        if (e.status !== 'OK') {
-          out.textContent = 'Không tìm thấy tuyến phù hợp (' + e.status + ').';
-          return;
-        }
-        const km = (e.distance.value/1000).toFixed(2);
-        out.textContent = `Khoảng cách: ${km} km — Thời gian ước tính: ${e.duration.text}`;
-      });
-    }
+      }
+    </script>
 
-    // đảm bảo callback ở phạm vi global cho script
-    window.initMap = initMap;
-  </script>
-</head>
-<body>
-  <h3>Gợi ý địa chỉ + Tính khoảng cách (Test tối giản)</h3>
-  <div class="row"><input id="from" placeholder="Điểm đi (Autocomplete)"></div>
-  <div class="row"><input id="to"   placeholder="Điểm đến (Autocomplete)"></div>
-  <div id="map"></div>
-  <div id="status">Đang tải Google Maps…</div>
-
-  <!-- THAY YOUR_KEY_HERE bằng GIÁ TRỊ key (AIza...) của project ĐÃ CÓ Billing -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&callback=initMap&libraries=places&language=vi&region=VN&v=weekly&_v=1" async defer></script>
-</body>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=YAIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&libraries=places&callback=initMap"
+      async
+      defer
+    ></script>
+  </body>
 </html>
