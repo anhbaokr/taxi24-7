@@ -2,76 +2,117 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
+  <title>Đặt xe - Bản đồ & Giá</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gợi ý địa chỉ và tính khoảng cách</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
     }
     input {
-      width: 300px;
+      width: 100%;
+      max-width: 400px;
+      padding: 10px;
       margin-bottom: 10px;
-      padding: 8px;
       font-size: 16px;
     }
-    #distance {
-      margin-top: 10px;
+    #map {
+      height: 300px;
+      margin-bottom: 10px;
+    }
+    #output {
+      font-size: 18px;
       font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h2>Nhập địa chỉ đi và đến:</h2>
-  <input id="origin" type="text" placeholder="Điểm đi" />
-  <br />
-  <input id="destination" type="text" placeholder="Điểm đến" />
-  <p id="distance">Khoảng cách: ...</p>
+
+  <h2>Đặt xe nhanh</h2>
+  <div id="map"></div>
+
+  <input id="from" type="text" placeholder="Nhập điểm đi" />
+  <input id="to" type="text" placeholder="Nhập điểm đến" />
+
+  <p id="output">Khoảng cách & giá tiền sẽ hiển thị ở đây.</p>
 
   <script>
-    let autocompleteOrigin, autocompleteDestination, directionsService;
+    let map, directionsService, directionsRenderer;
 
     function initMap() {
-      const originInput = document.getElementById("origin");
-      const destinationInput = document.getElementById("destination");
-
-      autocompleteOrigin = new google.maps.places.Autocomplete(originInput);
-      autocompleteDestination = new google.maps.places.Autocomplete(destinationInput);
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 21.028511, lng: 105.804817 }, // Hà Nội
+        zoom: 13,
+      });
 
       directionsService = new google.maps.DirectionsService();
+      directionsRenderer = new google.maps.DirectionsRenderer();
+      directionsRenderer.setMap(map);
 
-      autocompleteOrigin.addListener("place_changed", calculateDistance);
-      autocompleteDestination.addListener("place_changed", calculateDistance);
+      const fromInput = document.getElementById("from");
+      const toInput = document.getElementById("to");
+
+      new google.maps.places.Autocomplete(fromInput);
+      new google.maps.places.Autocomplete(toInput);
+
+      fromInput.addEventListener("change", calcRoute);
+      toInput.addEventListener("change", calcRoute);
     }
 
-    function calculateDistance() {
-      const origin = document.getElementById("origin").value;
-      const destination = document.getElementById("destination").value;
+    function calcRoute() {
+      const start = document.getElementById("from").value;
+      const end = document.getElementById("to").value;
 
-      if (origin && destination) {
-        directionsService.route(
-          {
-            origin: origin,
-            destination: destination,
-            travelMode: google.maps.TravelMode.DRIVING,
-          },
-          (response, status) => {
-            if (status === "OK") {
-              const distanceText = response.routes[0].legs[0].distance.text;
-              document.getElementById("distance").innerText = "Khoảng cách: " + distanceText;
-            } else {
-              document.getElementById("distance").innerText = "Không thể tính khoảng cách.";
-              console.error("Lỗi khi tính khoảng cách:", status);
-            }
+      if (start && end) {
+        const request = {
+          origin: start,
+          destination: end,
+          travelMode: google.maps.TravelMode.DRIVING,
+        };
+
+        directionsService.route(request, (result, status) => {
+          if (status === "OK") {
+            directionsRenderer.setDirections(result);
+
+            const distanceText = result.routes[0].legs[0].distance.text;
+            const distanceValue = result.routes[0].legs[0].distance.value / 1000; // m to km
+
+            const price = calculateFare(distanceValue);
+
+            document.getElementById("output").innerText =
+              `Khoảng cách: ${distanceText} — Giá dự kiến: ${price.toLocaleString()}đ`;
+          } else {
+            document.getElementById("output").innerText = "Không tính được khoảng cách.";
           }
-        );
+        });
       }
+    }
+
+    function calculateFare(km) {
+      let price = 15000; // mở cửa
+
+      if (km <= 1) {
+        price = 15000;
+      } else if (km <= 30) {
+        price = 15000 + (km - 1) * 11000;
+      } else {
+        price = 15000 + 29 * 11000 + (km - 30) * 9000;
+      }
+
+      const now = new Date();
+      const hour = now.getHours();
+
+      // phụ phí ban đêm từ 22h–5h
+      if (hour >= 22 || hour < 5) {
+        price *= 1.2;
+      }
+
+      return Math.round(price);
     }
   </script>
 
-  <!-- Thay YOUR_API_KEY_HERE bằng API key thật -->
   <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao&libraries=places&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&libraries=places&callback=initMap">
   </script>
 </body>
 </html>
