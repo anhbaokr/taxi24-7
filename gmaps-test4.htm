@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gợi ý địa chỉ & Tính khoảng cách</title>
+  <title>Gợi ý địa chỉ và tính khoảng cách</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,28 +11,25 @@
     }
     input {
       width: 300px;
+      margin-bottom: 10px;
       padding: 8px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      font-size: 16px;
     }
     #distance {
-      margin-top: 15px;
+      margin-top: 10px;
       font-weight: bold;
-      color: green;
     }
   </style>
 </head>
 <body>
-  <h2>Nhập địa chỉ để tính khoảng cách</h2>
+  <h2>Nhập địa chỉ đi và đến:</h2>
   <input id="origin" type="text" placeholder="Điểm đi" />
   <br />
   <input id="destination" type="text" placeholder="Điểm đến" />
-  <p id="distance">Khoảng cách sẽ hiển thị ở đây</p>
+  <p id="distance">Khoảng cách: ...</p>
 
   <script>
-    let autocompleteOrigin, autocompleteDestination;
-    let directionsService, directionsRenderer;
+    let autocompleteOrigin, autocompleteDestination, directionsService;
 
     function initMap() {
       const originInput = document.getElementById("origin");
@@ -43,7 +40,6 @@
 
       directionsService = new google.maps.DirectionsService();
 
-      // Gắn sự kiện sau khi chọn địa chỉ
       autocompleteOrigin.addListener("place_changed", calculateDistance);
       autocompleteDestination.addListener("place_changed", calculateDistance);
     }
@@ -64,8 +60,8 @@
               const distanceText = response.routes[0].legs[0].distance.text;
               document.getElementById("distance").innerText = "Khoảng cách: " + distanceText;
             } else {
-              console.error("Không thể tính khoảng cách:", status);
-              document.getElementById("distance").innerText = "Không thể tính được khoảng cách.";
+              document.getElementById("distance").innerText = "Không thể tính khoảng cách.";
+              console.error("Lỗi khi tính khoảng cách:", status);
             }
           }
         );
@@ -73,11 +69,9 @@
     }
   </script>
 
-  <!-- Thay YOUR_API_KEY_HERE bằng API Key của bạn -->
-  <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&libraries=places&callback=initMap"
-    async
-    defer
-  ></script>
+  <!-- Thay YOUR_API_KEY_HERE bằng API key thật -->
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&libraries=places&callback=initMap">
+  </script>
 </body>
 </html>
