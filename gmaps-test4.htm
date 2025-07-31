@@ -11,38 +11,41 @@
       font-family: Arial, sans-serif;
       background: #121212;
       color: #f0f0f0;
-      padding: 20px;
+      margin: 0;
+      padding: 10px;
     }
     #map {
       width: 100%;
-      height: 400px;
-      margin-bottom: 20px;
+      height: 250px;
+      margin: 10px 0;
       border-radius: 10px;
     }
-    .form-group {
-      position: relative;
-      max-width: 500px;
+    .form-group, select, label, button {
+      width: 100%;
       margin-bottom: 10px;
-    }
-    .form-group i {
-      position: absolute;
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #aaa;
     }
     .geocoder input {
       width: 100%;
-      padding: 10px 10px 10px 35px;
+      padding: 12px 12px 12px 36px;
       background: #1e1e1e;
       border: none;
       border-radius: 6px;
       color: #f0f0f0;
+      box-sizing: border-box;
     }
-    select, label, button {
-      width: 100%;
-      max-width: 500px;
-      margin: 5px 0;
+    .geocoder input:focus {
+      background-color: #2c2c2c;
+      outline: 2px solid #00ff99;
+    }
+    .geocoder .mapboxgl-ctrl-geocoder--icon-search {
+      left: 10px;
+      top: 12px;
+      fill: #ccc;
+    }
+    .geocoder .mapboxgl-ctrl-geocoder--input {
+      padding-left: 36px;
+    }
+    select, button {
       padding: 10px;
       border-radius: 6px;
       border: none;
@@ -53,25 +56,28 @@
       background: #007aff;
       color: white;
       font-weight: bold;
-      cursor: pointer;
     }
-    #price, #distance {
+    #info {
       font-weight: bold;
-      margin-top: 10px;
       color: #00ff99;
+      text-align: center;
+      margin: 10px 0;
+    }
+    @media (min-width: 600px) {
+      #map {
+        height: 300px;
+      }
     }
   </style>
 </head>
 <body>
-  <h2>🚖 Đặt Xe - Tính Cước Mapbox</h2>
+  <h2 style="text-align:center">🚖 Đặt Xe - Tính Cước Mapbox</h2>
 
   <div class="form-group">
-    <i>🔍</i>
     <div id="geocoder-origin" class="geocoder"></div>
   </div>
 
   <div class="form-group">
-    <i>📍</i>
     <div id="geocoder-destination" class="geocoder"></div>
   </div>
 
@@ -86,14 +92,15 @@
   <label><input type="checkbox" id="twoWay" /> 🚕 Đi 2 chiều</label>
   <label><input type="checkbox" id="night" /> 🌙 Phụ phí ban đêm</label>
 
-  <div id="map"></div>
+  <div id="info">
+    <p id="distance"></p>
+    <p id="price"></p>
+  </div>
 
-  <p id="distance"></p>
-  <p id="price"></p>
+  <div id="map"></div>
 
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
-
   <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoidGF4aTI0aC1vbmxpbmUiLCJhIjoiY21kcm5xeWk2MGw1NDJxb25zY3V4eHd4MCJ9.K4wVs6Xwelw6Ic6mXK1FPg';
 
