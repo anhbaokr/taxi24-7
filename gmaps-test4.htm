@@ -2,117 +2,146 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Đặt xe - Bản đồ & Giá</title>
+  <title>Đặt Xe - Tính Giá Mapbox</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    input {
-      width: 100%;
-      max-width: 400px;
-      padding: 10px;
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
-    #map {
-      height: 300px;
-      margin-bottom: 10px;
-    }
-    #output {
-      font-size: 18px;
-      font-weight: bold;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #map { width: 100%; height: 400px; margin-bottom: 20px; }
+    input, select, label { padding: 8px; width: 100%; max-width: 400px; margin: 5px 0; }
+    button { padding: 10px 20px; margin-top: 10px; cursor: pointer; }
+    #price, #distance { font-weight: bold; margin-top: 10px; }
   </style>
 </head>
 <body>
+  <h2>🚖 Tính Cước Taxi (Mapbox)</h2>
 
-  <h2>Đặt xe nhanh</h2>
+  <label>🔍 Điểm đi:</label>
+  <div id="geocoder-origin" style="margin-bottom:10px;"></div>
+
+  <label>📍 Điểm đến:</label>
+  <div id="geocoder-destination" style="margin-bottom:10px;"></div>
+
+  <button onclick="swapLocations()">🔁 Đổi chiều</button>
+
+  <label>🚗 Loại xe:</label>
+  <select id="carType">
+    <option value="4">Xe 4 chỗ</option>
+    <option value="7">Xe 7 chỗ</option>
+    <option value="16">Xe 16 chỗ</option>
+  </select>
+
+  <label><input type="checkbox" id="twoWay" /> 🚙 Đi 2 chiều</label><br />
+  <label><input type="checkbox" id="night" /> 🌙 Phụ phí ban đêm</label>
+
   <div id="map"></div>
 
-  <input id="from" type="text" placeholder="Nhập điểm đi" />
-  <input id="to" type="text" placeholder="Nhập điểm đến" />
+  <p id="distance"></p>
+  <p id="price"></p>
 
-  <p id="output">Khoảng cách & giá tiền sẽ hiển thị ở đây.</p>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
 
   <script>
-    let map, directionsService, directionsRenderer;
+    mapboxgl.accessToken = 'pk.eyJ1IjoidGF4aTI0aC1vbmxpbmUiLCJhIjoiY21kcm5xeWk2MGw1NDJxb25zY3V4eHd4MCJ9.K4wVs6Xwelw6Ic6mXK1FPg';
 
-    function initMap() {
-      map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 21.028511, lng: 105.804817 }, // Hà Nội
-        zoom: 13,
-      });
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [105.854444, 21.028511], // Hà Nội
+      zoom: 12
+    });
 
-      directionsService = new google.maps.DirectionsService();
-      directionsRenderer = new google.maps.DirectionsRenderer();
-      directionsRenderer.setMap(map);
+    const geocoderOrigin = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      countries: 'vn',
+      placeholder: 'Nhập điểm đi',
+      mapboxgl: mapboxgl
+    });
 
-      const fromInput = document.getElementById("from");
-      const toInput = document.getElementById("to");
+    const geocoderDestination = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      countries: 'vn',
+      placeholder: 'Nhập điểm đến',
+      mapboxgl: mapboxgl
+    });
 
-      new google.maps.places.Autocomplete(fromInput);
-      new google.maps.places.Autocomplete(toInput);
+    document.getElementById('geocoder-origin').appendChild(geocoderOrigin.onAdd(map));
+    document.getElementById('geocoder-destination').appendChild(geocoderDestination.onAdd(map));
 
-      fromInput.addEventListener("change", calcRoute);
-      toInput.addEventListener("change", calcRoute);
+    let originCoords = null;
+    let destinationCoords = null;
+
+    geocoderOrigin.on('result', function (e) {
+      originCoords = e.result.geometry.coordinates;
+      if (originCoords && destinationCoords) calculateDistance();
+    });
+
+    geocoderDestination.on('result', function (e) {
+      destinationCoords = e.result.geometry.coordinates;
+      if (originCoords && destinationCoords) calculateDistance();
+    });
+
+    function swapLocations() {
+      const temp = originCoords;
+      originCoords = destinationCoords;
+      destinationCoords = temp;
+      if (originCoords && destinationCoords) calculateDistance();
     }
 
-    function calcRoute() {
-      const start = document.getElementById("from").value;
-      const end = document.getElementById("to").value;
+    function calculateDistance() {
+      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${originCoords[0]},${originCoords[1]};${destinationCoords[0]},${destinationCoords[1]}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
 
-      if (start && end) {
-        const request = {
-          origin: start,
-          destination: end,
-          travelMode: google.maps.TravelMode.DRIVING,
-        };
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          const route = data.routes[0];
+          const distanceKm = route.distance / 1000;
+          const price = calculatePrice(distanceKm);
 
-        directionsService.route(request, (result, status) => {
-          if (status === "OK") {
-            directionsRenderer.setDirections(result);
+          document.getElementById('distance').innerText = `Khoảng cách: ${distanceKm.toFixed(2)} km`;
+          document.getElementById('price').innerText = `Giá cước: ${price.toLocaleString()} VND`;
 
-            const distanceText = result.routes[0].legs[0].distance.text;
-            const distanceValue = result.routes[0].legs[0].distance.value / 1000; // m to km
+          map.getSource('route')?.setData(route.geometry) || map.addSource('route', {
+            type: 'geojson',
+            data: route.geometry
+          });
 
-            const price = calculateFare(distanceValue);
-
-            document.getElementById("output").innerText =
-              `Khoảng cách: ${distanceText} — Giá dự kiến: ${price.toLocaleString()}đ`;
-          } else {
-            document.getElementById("output").innerText = "Không tính được khoảng cách.";
+          if (!map.getLayer('route')) {
+            map.addLayer({
+              id: 'route',
+              type: 'line',
+              source: 'route',
+              paint: {
+                'line-color': '#ff0000',
+                'line-width': 4
+              }
+            });
           }
+
+          map.fitBounds([originCoords, destinationCoords], { padding: 50 });
         });
-      }
     }
 
-    function calculateFare(km) {
-      let price = 15000; // mở cửa
+    function calculatePrice(distanceKm) {
+      const carType = document.getElementById('carType').value;
+      const isNight = document.getElementById('night').checked;
+      const isTwoWay = document.getElementById('twoWay').checked;
 
-      if (km <= 1) {
-        price = 15000;
-      } else if (km <= 30) {
-        price = 15000 + (km - 1) * 11000;
-      } else {
-        price = 15000 + 29 * 11000 + (km - 30) * 9000;
-      }
+      const pricing = {
+        4: { open: 10000, firstKm: 15000, nextKm: 11000 },
+        7: { open: 12000, firstKm: 17000, nextKm: 13000 },
+        16: { open: 15000, firstKm: 20000, nextKm: 15000 }
+      };
 
-      const now = new Date();
-      const hour = now.getHours();
+      const p = pricing[carType];
+      let base = distanceKm <= 1 ? p.open + p.firstKm : p.open + p.firstKm + ((distanceKm - 1) * p.nextKm);
+      if (isNight) base *= 1.2;
+      if (isTwoWay) base *= 2;
 
-      // phụ phí ban đêm từ 22h–5h
-      if (hour >= 22 || hour < 5) {
-        price *= 1.2;
-      }
-
-      return Math.round(price);
+      return Math.round(base);
     }
-  </script>
-
-  <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD16jZhCVtT9b6-nzYhU_ESh6_9aPDMGpU&libraries=places&callback=initMap">
   </script>
 </body>
 </html>
