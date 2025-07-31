@@ -7,32 +7,83 @@
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" />
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    #map { width: 100%; height: 400px; margin-bottom: 20px; }
-    input, select, label { padding: 8px; width: 100%; max-width: 400px; margin: 5px 0; }
-    button { padding: 10px 20px; margin-top: 10px; cursor: pointer; }
-    #price, #distance { font-weight: bold; margin-top: 10px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #f0f0f0;
+      padding: 20px;
+    }
+    #map {
+      width: 100%;
+      height: 400px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+    }
+    .form-group {
+      position: relative;
+      max-width: 500px;
+      margin-bottom: 10px;
+    }
+    .form-group i {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #aaa;
+    }
+    .geocoder input {
+      width: 100%;
+      padding: 10px 10px 10px 35px;
+      background: #1e1e1e;
+      border: none;
+      border-radius: 6px;
+      color: #f0f0f0;
+    }
+    select, label, button {
+      width: 100%;
+      max-width: 500px;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      background: #1e1e1e;
+      color: #f0f0f0;
+    }
+    button {
+      background: #007aff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #price, #distance {
+      font-weight: bold;
+      margin-top: 10px;
+      color: #00ff99;
+    }
   </style>
 </head>
 <body>
-  <h2>🚖 Tính Cước Taxi (Mapbox)</h2>
+  <h2>🚖 Đặt Xe - Tính Cước Mapbox</h2>
 
-  <label>🔍 Điểm đi:</label>
-  <div id="geocoder-origin" style="margin-bottom:10px;"></div>
+  <div class="form-group">
+    <i>🔍</i>
+    <div id="geocoder-origin" class="geocoder"></div>
+  </div>
 
-  <label>📍 Điểm đến:</label>
-  <div id="geocoder-destination" style="margin-bottom:10px;"></div>
+  <div class="form-group">
+    <i>📍</i>
+    <div id="geocoder-destination" class="geocoder"></div>
+  </div>
 
   <button onclick="swapLocations()">🔁 Đổi chiều</button>
 
-  <label>🚗 Loại xe:</label>
   <select id="carType">
-    <option value="4">Xe 4 chỗ</option>
-    <option value="7">Xe 7 chỗ</option>
-    <option value="16">Xe 16 chỗ</option>
+    <option value="4">🚗 Xe 4 chỗ</option>
+    <option value="7">🚙 Xe 7 chỗ</option>
+    <option value="16">🚌 Xe 16 chỗ</option>
   </select>
 
-  <label><input type="checkbox" id="twoWay" /> 🚙 Đi 2 chiều</label><br />
+  <label><input type="checkbox" id="twoWay" /> 🚕 Đi 2 chiều</label>
   <label><input type="checkbox" id="night" /> 🌙 Phụ phí ban đêm</label>
 
   <div id="map"></div>
@@ -48,23 +99,25 @@
 
     const map = new mapboxgl.Map({
       container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [105.854444, 21.028511], // Hà Nội
+      style: 'mapbox://styles/mapbox/dark-v10',
+      center: [105.854444, 21.028511],
       zoom: 12
     });
 
     const geocoderOrigin = new MapboxGeocoder({
       accessToken: mapboxgl.accessToken,
-      countries: 'vn',
-      placeholder: 'Nhập điểm đi',
-      mapboxgl: mapboxgl
+      placeholder: 'Điểm đi (địa danh, đình chùa...)',
+      mapboxgl: mapboxgl,
+      marker: false,
+      countries: 'vn'
     });
 
     const geocoderDestination = new MapboxGeocoder({
       accessToken: mapboxgl.accessToken,
-      countries: 'vn',
-      placeholder: 'Nhập điểm đến',
-      mapboxgl: mapboxgl
+      placeholder: 'Điểm đến (địa danh, địa lý...)',
+      mapboxgl: mapboxgl,
+      marker: false,
+      countries: 'vn'
     });
 
     document.getElementById('geocoder-origin').appendChild(geocoderOrigin.onAdd(map));
@@ -83,14 +136,18 @@
       if (originCoords && destinationCoords) calculateDistance();
     });
 
+    document.getElementById('carType').addEventListener('change', calculateDistance);
+    document.getElementById('night').addEventListener('change', calculateDistance);
+    document.getElementById('twoWay').addEventListener('change', calculateDistance);
+
     function swapLocations() {
-      const temp = originCoords;
-      originCoords = destinationCoords;
-      destinationCoords = temp;
+      [originCoords, destinationCoords] = [destinationCoords, originCoords];
       if (originCoords && destinationCoords) calculateDistance();
     }
 
     function calculateDistance() {
+      if (!originCoords || !destinationCoords) return;
+
       const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${originCoords[0]},${originCoords[1]};${destinationCoords[0]},${destinationCoords[1]}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
 
       fetch(url)
@@ -100,8 +157,8 @@
           const distanceKm = route.distance / 1000;
           const price = calculatePrice(distanceKm);
 
-          document.getElementById('distance').innerText = `Khoảng cách: ${distanceKm.toFixed(2)} km`;
-          document.getElementById('price').innerText = `Giá cước: ${price.toLocaleString()} VND`;
+          document.getElementById('distance').innerText = `📏 Khoảng cách: ${distanceKm.toFixed(2)} km`;
+          document.getElementById('price').innerText = `💰 Giá cước: ${price.toLocaleString()} VND`;
 
           map.getSource('route')?.setData(route.geometry) || map.addSource('route', {
             type: 'geojson',
@@ -114,7 +171,7 @@
               type: 'line',
               source: 'route',
               paint: {
-                'line-color': '#ff0000',
+                'line-color': '#00ff99',
                 'line-width': 4
               }
             });
