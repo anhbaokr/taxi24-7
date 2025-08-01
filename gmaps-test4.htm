@@ -4,9 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Đặt Xe Nhanh</title>
+
+  <!-- Mapbox -->
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
   <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" rel="stylesheet" />
+
+  <!-- Flatpickr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
+
   <style>
+    /* Ngăn input tràn khỏi khung */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: 'Segoe UI', sans-serif;
       background-color: #1e2a34;
@@ -16,6 +29,7 @@
       justify-content: center;
       padding: 20px;
     }
+
     form {
       background-color: #2b3a46;
       border-radius: 10px;
@@ -25,14 +39,16 @@
       box-shadow: 0 0 8px rgba(0,0,0,0.5);
       font-size: 14px;
     }
+
     h2 {
-      margin-top: 0;
-      font-size: 18px;
       text-align: center;
+      font-size: 18px;
+      margin-top: 0;
     }
+
     input, select, button {
       width: 100%;
-      padding: 8px 10px;
+      padding: 7px 10px;
       margin-bottom: 10px;
       border-radius: 6px;
       border: none;
@@ -40,23 +56,24 @@
       color: #fff;
       font-size: 13px;
     }
+
     input:focus, select:focus {
       outline: 2px solid #00d4ab;
       background-color: #415768;
     }
+
     label {
       font-weight: 500;
       margin-bottom: 4px;
       display: block;
     }
-    .geocoder {
-      margin-bottom: 10px;
-    }
+
     .checkbox-group {
       display: flex;
       justify-content: space-between;
       gap: 10px;
     }
+
     .checkbox-group label {
       flex: 1;
       border: 1px solid #555;
@@ -68,37 +85,43 @@
       gap: 6px;
       font-size: 13px;
     }
+
     .checkbox-group input {
       width: auto;
     }
+
     #map {
       height: 150px;
       border-radius: 10px;
       margin-top: 10px;
     }
+
     #info {
       text-align: center;
       font-size: 13px;
       margin: 8px 0;
       display: none;
     }
+
     button {
       background-color: #00aaff;
       font-weight: bold;
       transition: background 0.3s;
     }
+
     button:hover {
       background-color: #008ecb;
     }
-    .loader {
-      display: none;
-      text-align: center;
-      margin-top: 10px;
-      font-size: 14px;
-    }
+
     @media (max-width: 480px) {
       form { font-size: 13px; }
       input, select, button { font-size: 12px; }
+    }
+
+    /* Ẩn icon datetime mặc định (tránh hiện đè icon) */
+    input#datetime::-webkit-calendar-picker-indicator {
+      opacity: 0;
+      display: none;
     }
   </style>
 </head>
@@ -106,7 +129,7 @@
   <form onsubmit="submitBooking(event)">
     <h2>🚖 Đặt Xe</h2>
     <input type="text" id="name" placeholder="Họ và tên" required />
-    <input type="tel" id="phone" placeholder="Số điện thoại" required />
+    <input type="tel" id="phone" placeholder="Số điện thoại (10 số)" required />
     <div id="geocoder-origin" class="geocoder"></div>
     <div style="height:5px;"></div>
     <div id="geocoder-destination" class="geocoder"></div>
@@ -116,7 +139,7 @@
       <option value="7">🚙 Xe 7 chỗ</option>
       <option value="16">🚌 Xe 16 chỗ</option>
     </select>
-    <input type="datetime-local" id="datetime" required />
+    <input id="datetime" placeholder="Chọn ngày giờ đi" required />
     <div class="checkbox-group">
       <label><input type="checkbox" id="twoWay" /> ↔️ 2 chiều</label>
       <label><input type="checkbox" id="night" /> 🌙 Ban đêm</label>
@@ -125,14 +148,22 @@
       <p id="distance"></p>
       <p id="price"></p>
     </div>
-    <button type="submit">📩 Đặt xe</button>
-    <div class="loader" id="loader">🚗 Đang gửi thông tin đặt xe...</div>
+    <button type="submit" id="submitBtn">📩 Đặt xe</button>
     <div id="map"></div>
   </form>
 
+  <!-- JS -->
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
   <script>
+    flatpickr("#datetime", {
+      enableTime: true,
+      time_24hr: true,
+      dateFormat: "d/m/Y H:i",
+      locale: "vn",
+      minDate: "today"
+    });
+
     mapboxgl.accessToken = 'pk.eyJ1IjoidGF4aTI0aC1vbmxpbmUiLCJhIjoiY21kcm5xeWk2MGw1NDJxb25zY3V4eHd4MCJ9.K4wVs6Xwelw6Ic6mXK1FPg';
     const map = new mapboxgl.Map({
       container: 'map',
@@ -141,21 +172,8 @@
       zoom: 12
     });
 
-    const geocoderOrigin = new MapboxGeocoder({
-      accessToken: mapboxgl.accessToken,
-      placeholder: '📍 Điểm đi',
-      mapboxgl: mapboxgl,
-      marker: false,
-      countries: 'vn'
-    });
-    const geocoderDestination = new MapboxGeocoder({
-      accessToken: mapboxgl.accessToken,
-      placeholder: '📍 Điểm đến',
-      mapboxgl: mapboxgl,
-      marker: false,
-      countries: 'vn'
-    });
-
+    const geocoderOrigin = new MapboxGeocoder({ accessToken: mapboxgl.accessToken, placeholder: '📍 Điểm đi', mapboxgl, marker: false, countries: 'vn' });
+    const geocoderDestination = new MapboxGeocoder({ accessToken: mapboxgl.accessToken, placeholder: '📍 Điểm đến', mapboxgl, marker: false, countries: 'vn' });
     document.getElementById('geocoder-origin').appendChild(geocoderOrigin.onAdd(map));
     document.getElementById('geocoder-destination').appendChild(geocoderDestination.onAdd(map));
 
@@ -163,15 +181,15 @@
     let originName = '', destinationName = '';
     let originMarker = null, destinationMarker = null;
 
-    geocoderOrigin.on('result', function (e) {
+    geocoderOrigin.on('result', e => {
       originCoords = e.result.geometry.coordinates;
-      originName = e.result.place_name;
+      originName = e.result.text || e.result.place_name;
       updateRoute();
     });
 
-    geocoderDestination.on('result', function (e) {
+    geocoderDestination.on('result', e => {
       destinationCoords = e.result.geometry.coordinates;
-      destinationName = e.result.place_name;
+      destinationName = e.result.text || e.result.place_name;
       updateRoute();
     });
 
@@ -182,7 +200,10 @@
     }
 
     function updateRoute() {
-      if (!originCoords || !destinationCoords) return;
+      if (!originCoords || !destinationCoords) {
+        document.getElementById('info').style.display = 'none';
+        return;
+      }
 
       const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${originCoords.join(',')};${destinationCoords.join(',')}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
       fetch(url).then(res => res.json()).then(data => {
@@ -206,8 +227,10 @@
 
         originMarker = new mapboxgl.Marker({ color: '#00ff00' }).setLngLat(originCoords).addTo(map);
         destinationMarker = new mapboxgl.Marker({ color: '#ff0033' }).setLngLat(destinationCoords).addTo(map);
-
         map.fitBounds([originCoords, destinationCoords], { padding: 40 });
+		document.getElementById('twoWay').addEventListener('change', updateRoute);
+        document.getElementById('night').addEventListener('change', updateRoute);
+        document.getElementById('carType').addEventListener('change', updateRoute);	
       });
     }
 
@@ -229,14 +252,19 @@
 
     function submitBooking(event) {
       event.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+
+      if (!/^(0|\+84)[0-9]{9}$/.test(phone)) return alert("Số điện thoại không hợp lệ!");
       if (!originCoords || !destinationCoords) return alert("Vui lòng chọn điểm đi và đến!");
 
-      const loader = document.getElementById("loader");
-      loader.style.display = "block";
+      const btn = document.getElementById("submitBtn");
+      btn.disabled = true;
+      btn.textContent = "🚗 Đang gửi...";
 
       const data = {
-        name: document.getElementById('name').value,
-        phone: document.getElementById('phone').value,
+        name,
+        phone,
         origin: originName,
         destination: destinationName,
         carType: document.getElementById('carType').value,
@@ -253,7 +281,7 @@
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(data)
       }).then(() => {
-        loader.textContent = "✅ Đặt xe thành công! Đang tải lại...";
+        btn.textContent = "✅ Đặt thành công!";
         setTimeout(() => window.location.reload(), 2000);
       });
     }
