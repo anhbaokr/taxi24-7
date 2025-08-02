@@ -269,7 +269,8 @@
       event.preventDefault();
       const name = document.getElementById('name').value.trim();
       const phone = document.getElementById('phone').value.trim();
-
+      const datetime = document.getElementById('datetime').value.trim();
+      if (!datetime) return alert("Vui lòng chọn ngày giờ đi!");
       if (!/^(0|\+84)[0-9]{9}$/.test(phone)) return alert("Số điện thoại không hợp lệ!");
       if (!originCoords || !destinationCoords) return alert("Vui lòng chọn điểm đi và đến!");
 
@@ -320,5 +321,6 @@
 
 </body>
 </html>
+
 
 
