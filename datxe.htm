@@ -136,6 +136,21 @@
     opacity: 0;
     display: none;
   }
+form {
+  background-color: var(--form-bg);
+  border-radius: 10px;
+  padding: 15px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.5);
+  font-size: 14px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* ✨ hiệu ứng chuyển mượt */
+}
+
+form:hover {
+  transform: scale(1.02); /* ✨ phóng to nhẹ */
+  box-shadow: 0 0 16px rgba(0, 170, 255, 0.7); /* ✨ đổ bóng nổi bật hơn */
+}
 </style>
 
 
@@ -321,6 +336,7 @@
 
 </body>
 </html>
+
 
 
 
