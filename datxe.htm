@@ -224,10 +224,15 @@ form:hover {
     });
 
     function swapLocations() {
-      [originCoords, destinationCoords] = [destinationCoords, originCoords];
-      [originName, destinationName] = [destinationName, originName];
-      updateRoute();
-    }
+  [originCoords, destinationCoords] = [destinationCoords, originCoords];
+  [originName, destinationName] = [destinationName, originName];
+
+  // Cập nhật lại giá trị input hiển thị
+  document.querySelector('#geocoder-origin input').value = originName;
+  document.querySelector('#geocoder-destination input').value = destinationName;
+
+  updateRoute();
+}
 
     function updateRoute() {
       if (!originCoords || !destinationCoords) {
