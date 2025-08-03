@@ -1,84 +1,46 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Chỉ đường với Google Maps</title>
-    <meta charset="utf-8" />
-    <style>
-      #map {
-        height: 500px;
-        width: 100%;
-        margin-top: 10px;
-      }
-      input {
-        width: 90%;
-        padding: 8px;
-        margin: 5px auto;
-        display: block;
-        font-size: 16px;
-      }
-      button {
-        display: block;
-        margin: 10px auto;
-        padding: 10px 20px;
-        font-size: 16px;
-      }
-    </style>
-  </head>
-  <body>
-    <h2 style="text-align:center;">🗺️ Gợi ý & Chỉ đường 01 (Google Maps)</h2>
-    <input id="origin-input" type="text" placeholder="Điểm đi..." />
-    <input id="destination-input" type="text" placeholder="Điểm đến..." />
-    <button onclick="calculateRoute()">🚗 Tính lộ trình</button>
-    <div id="map"></div>
+<head>
+  <meta charset="utf-8">
+  <title>Bản đồ cơ bản</title>
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h3 style="text-align:center;">🗺️ Bản đồ Google Maps cơ bản (không cần Places API)</h3>
+  <div id="map"></div>
 
-    <script>
-      let map, directionsService, directionsRenderer;
+  <script>
+    let map;
 
-      function initMap() {
-        map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 21.0285, lng: 105.8542 }, // Hà Nội
-          zoom: 13,
-        });
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 21.0285, lng: 105.8542 }, // Hà Nội
+        zoom: 13,
+      });
 
-        directionsService = new google.maps.DirectionsService();
-        directionsRenderer = new google.maps.DirectionsRenderer();
-        directionsRenderer.setMap(map);
+      const marker = new google.maps.Marker({
+        position: { lat: 21.0285, lng: 105.8542 },
+        map: map,
+        title: "Vị trí mặc định",
+      });
 
-        // Autocomplete cho input
-        new google.maps.places.Autocomplete(document.getElementById("origin-input"));
-        new google.maps.places.Autocomplete(document.getElementById("destination-input"));
-      }
+      // Sự kiện click để hiển thị tọa độ
+      map.addListener("click", (e) => {
+        const lat = e.latLng.lat();
+        const lng = e.latLng.lng();
+        alert(`📍 Tọa độ bạn vừa click:\nLatitude: ${lat}\nLongitude: ${lng}`);
+      });
+    }
+  </script>
 
-      function calculateRoute() {
-        const origin = document.getElementById("origin-input").value;
-        const destination = document.getElementById("destination-input").value;
-
-        if (!origin || !destination) {
-          alert("Vui lòng nhập điểm đi và điểm đến.");
-          return;
-        }
-
-        directionsService.route(
-          {
-            origin: origin,
-            destination: destination,
-            travelMode: google.maps.TravelMode.DRIVING,
-          },
-          (response, status) => {
-            if (status === "OK") {
-              directionsRenderer.setDirections(response);
-            } else {
-              alert("Không tìm thấy tuyến đường: " + status);
-            }
-          }
-        );
-      }
-    </script>
-
-    <!-- Dùng API key mới của bạn -->
-    <script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBo7uXGycPEOcCIyqDi08MsJyGI-d02czM&libraries=places&callback=initMap">
-    </script>
-  </body>
+  <!-- API chỉ dùng Maps JavaScript -->
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAe7eoDdvDfylCP8iIG6usnFgOEJE1lmmw&callback=initMap">
+  </script>
+</body>
 </html>
-
