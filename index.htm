@@ -25,14 +25,14 @@
     </style>
   </head>
   <body>
-    <h2 style="text-align:center;">🗺️ Gợi ý địa điểm & Chỉ đường test 01(Google Maps)</h2>
+    <h2 style="text-align:center;">🗺️ Gợi ý & Chỉ đường (Google Maps)</h2>
     <input id="origin-input" type="text" placeholder="Điểm đi..." />
     <input id="destination-input" type="text" placeholder="Điểm đến..." />
     <button onclick="calculateRoute()">🚗 Tính lộ trình</button>
     <div id="map"></div>
 
     <script>
-      let map, directionsService, directionsRenderer, originAutocomplete, destinationAutocomplete;
+      let map, directionsService, directionsRenderer;
 
       function initMap() {
         map = new google.maps.Map(document.getElementById("map"), {
@@ -44,8 +44,9 @@
         directionsRenderer = new google.maps.DirectionsRenderer();
         directionsRenderer.setMap(map);
 
-        originAutocomplete = new google.maps.places.Autocomplete(document.getElementById("origin-input"));
-        destinationAutocomplete = new google.maps.places.Autocomplete(document.getElementById("destination-input"));
+        // Autocomplete cho input
+        new google.maps.places.Autocomplete(document.getElementById("origin-input"));
+        new google.maps.places.Autocomplete(document.getElementById("destination-input"));
       }
 
       function calculateRoute() {
@@ -53,7 +54,7 @@
         const destination = document.getElementById("destination-input").value;
 
         if (!origin || !destination) {
-          alert("Vui lòng nhập cả điểm đi và điểm đến.");
+          alert("Vui lòng nhập điểm đi và điểm đến.");
           return;
         }
 
@@ -67,16 +68,16 @@
             if (status === "OK") {
               directionsRenderer.setDirections(response);
             } else {
-              alert("Không tìm được đường đi: " + status);
+              alert("Không tìm thấy tuyến đường: " + status);
             }
           }
         );
       }
     </script>
 
-    <script async defer src="https://maps.googleapis.com/maps/api/js?AIzaSyAwA22DfNHrWxK5CLs8SnQPzqkLcBwe2Kg&callback=initMap"></script>
+    <!-- Dùng API key mới của bạn -->
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAwA22DfNHrWxK5CLs8SnQPzqkLcBwe2Kg&libraries=places&callback=initMap">
+    </script>
   </body>
 </html>
-
-
-
