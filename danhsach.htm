@@ -283,7 +283,8 @@
       const data = await res.json();
       if(data.success) {
         alert('Đã xóa thành công!');
-        fetchBookings();
+        fetchBookings().then(() => {
+        addFilterListeners(); // Gắn lại bộ lọc sau khi có dữ liệu});
       } else {
         alert('Xóa thất bại: ' + (data.message || 'Lỗi server'));
       }
@@ -293,7 +294,7 @@
   };
 
   // Xử lý đăng nhập Google
- function handleCredentialResponse(response) {
+  function handleCredentialResponse(response) {
     const payload = parseJwt(response.credential);
     userEmail = payload.email;
     console.log('Đăng nhập:', userEmail);
@@ -304,10 +305,10 @@
     if(userEmail === 'luannvkr@gmail.com') {
   document.getElementById('deleteBtn').style.display = 'inline-block';
 }
-  document.getElementById('signOutBtn').style.display = 'inline-block';
-   fetchBookings();
-  }
+    document.getElementById('signOutBtn').style.display = 'inline-block';
 
+    fetchBookings();
+  }
 
   // Đăng xuất
   document.getElementById('signOutBtn').onclick = () => {
@@ -325,5 +326,3 @@
 </script>
 </body>
 </html>
-
-
