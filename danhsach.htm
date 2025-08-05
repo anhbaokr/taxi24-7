@@ -293,25 +293,22 @@
   };
 
   // Xử lý đăng nhập Google
-  function handleCredentialResponse(response) {
-    const payload = parseJwt(response.credential);
-    userEmail = payload.email;
-    console.log('Đăng nhập:', userEmail);
+ function handleCredentialResponse(response) {
+  const payload = parseJwt(response.credential);
+  userEmail = payload.email;
+  console.log('Đăng nhập email:', userEmail);
 
-    document.querySelector('.g_id_signin').style.display = 'none';
+  document.querySelector('.g_id_signin').style.display = 'none';
 
-    // Chỉ admin mới hiện nút xóa và bật bộ lọc tìm kiếm
-    if(userEmail === 'luannvkr@gmail.com') {  // Thay email admin của bạn
-      document.getElementById('deleteBtn').style.display = 'inline-block';
-      toggleFilters(true);
-    } else {
-      toggleFilters(false);
-    }
+  // Tạm thời hiện nút xóa mọi lúc để kiểm tra
+  document.getElementById('deleteBtn').style.display = 'inline-block';
+  toggleFilters(true);
 
-    document.getElementById('signOutBtn').style.display = 'inline-block';
+  document.getElementById('signOutBtn').style.display = 'inline-block';
 
-    fetchBookings();
-  }
+  fetchBookings();
+}
+
 
   // Đăng xuất
   document.getElementById('signOutBtn').onclick = () => {
@@ -329,3 +326,4 @@
 </script>
 </body>
 </html>
+
