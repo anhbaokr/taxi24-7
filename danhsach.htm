@@ -164,19 +164,6 @@
     return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
   }
 
-  function maskName(name) {
-    if (!name) return "";
-    if (name.length <= 2) return name[0] + "*";
-    return name.slice(0, 2) + "*".repeat(name.length - 2);
-  }
-
-  function maskPhone(phone) {
-    if (!phone) return "(Không có số)";
-    const str = phone.toString();
-    if (str.length <= 5) return str.replace(/.(?=.{2})/g, "*");
-    return str.slice(0, 3) + "***" + str.slice(-2);
-  }
-
   async function fetchBookings() {
     try {
       const response = await fetch(SCRIPT_URL);
@@ -224,8 +211,8 @@
         const div = document.createElement('div');
         div.className = 'booking-item';
 
-        const rawName = b["Họ tên"] || "";
-        const rawPhone = b["SĐT"] || "(Không có số)";
+        const displayName = b["Họ tên"] || "";
+        const displayPhone = b["SĐT"] || "(Không có số)";
         const datetimeRaw = b["Ngày giờ đi"] || '';
         const origin = b["Từ"] || '';
         const destination = b["Đến"] || '';
@@ -233,9 +220,6 @@
         const twoWay = b["Hai chiều"] === '✅ Có';
         const night = b["Ban đêm"] === '✅ Có';
         const timeSent = b["Thời gian gửi"] || '';
-
-        const displayName = maskName(rawName);
-        const displayPhone = maskPhone(rawPhone);
 
         div.innerHTML = `
           <p><strong>👤 Họ tên:</strong> ${displayName}</p>
@@ -283,8 +267,7 @@
       const data = await res.json();
       if(data.success) {
         alert('Đã xóa thành công!');
-        fetchBookings().then(() => {
-        addFilterListeners(); // Gắn lại bộ lọc sau khi có dữ liệu});
+        fetchBookings();
       } else {
         alert('Xóa thất bại: ' + (data.message || 'Lỗi server'));
       }
