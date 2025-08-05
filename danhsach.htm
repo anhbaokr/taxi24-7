@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Danh sách đơn đặt xe</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #1e2a33;
+      color: #fff;
+    }
+
+    .main {
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .booking-form {
+      background-color: #253544;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    .search-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .search-bar input,
+    .search-bar select {
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: none;
+      min-width: 160px;
+    }
+
+    .booking-item {
+      background: #2f4052;
+      padding: 15px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .booking-item strong {
+      display: inline-block;
+      width: 110px;
+      color: #ccc;
+    }
+
+    .booking-item p {
+      margin: 5px 0;
+    }
+
+    .pagination {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .pagination button {
+      padding: 6px 10px;
+      margin: 0 4px;
+      background-color: #34495e;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .pagination button.active {
+      background-color: #1abc9c;
+    }
+
+    #deleteAllBtn {
+      display: none;
+      margin-bottom: 10px;
+      padding: 10px 15px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #g_id_onload, .g_id_signin {
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="main">
+    <h2>📄 Danh sách đơn đặt xe 🚖 Taxi24h.Online</h2>
+
+    <!-- Google Sign-In -->
+    <div id="g_id_onload"
+         data-client_id="533150711630-i5cn7antf1h5kau067om4r3hijpqevka.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin"
+         data-type="standard"
+         data-size="large"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-shape="rectangular"
+         data-logo_alignment="left">
+    </div>
+
+    <!-- Nút xóa tất cả đơn hàng (ẩn theo mặc định) -->
+    <button id="deleteAllBtn">🗑️ Xóa tất cả đơn hàng</button>
+
+    <form class="booking-form" onsubmit="return false;">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Tìm theo điểm đi/đến..." oninput="renderBookings()">
+        <select id="typeFilter" onchange="renderBookings()">
+          <option value="">Tất cả loại xe</option>
+          <option value="4">4 chỗ</option>
+          <option value="7">7 chỗ</option>
+          <option value="16">16 chỗ</option>
+          <option value="truck">Xe tải</option>
+        </select>
+        <input type="date" id="dateFilter" onchange="renderBookings()">
+      </div>
+
+      <div id="bookingList"></div>
+      <div class="pagination" id="pagination"></div>
+    </form>
+  </div>
+
+  <script>
+    const ADMIN_EMAIL = "luannvkr@gmail.com";
+    const ITEMS_PER_PAGE = 5;
+    let currentPage = 1;
+
+    function renderCarType(type) {
+      switch (type) {
+        case '4': return '4 chỗ';
+        case '7': return '7 chỗ';
+        case '16': return '16 chỗ';
+        case 'truck': return 'Xe tải';
+        default: return type;
+      }
+    }
+
+    function renderBookings() {
+      const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const type = document.getElementById('typeFilter').value;
+      const date = document.getElementById('dateFilter').value;
+
+      const filtered = bookings.filter(b => {
+        const address = (b.origin + ' ' + b.destination).toLowerCase();
+        const datetime = b.datetime ? b.datetime.slice(0, 10).split('/').reverse().join('-') : '';
+        const vehicleType = b.vehicle || b.carType || '';
+        return (
+          (!search || address.includes(search)) &&
+          (!type || vehicleType === type) &&
+          (!date || datetime === date)
+        );
+      }).reverse();
+
+      const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+      if (currentPage > totalPages) currentPage = totalPages || 1;
+
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE;
+      const currentItems = filtered.slice(start, end);
+
+      const listContainer = document.getElementById('bookingList');
+      listContainer.innerHTML = '';
+
+      if (currentItems.length === 0) {
+        listContainer.innerHTML = '<p>Không tìm thấy đơn nào.</p>';
+      } else {
+        currentItems.forEach(b => {
+          const vehicleType = b.vehicle || b.carType || '';
+          const div = document.createElement('div');
+          div.className = 'booking-item';
+          div.innerHTML = `
+            <p><strong>📅 Ngày đi:</strong> ${b.datetime || 'Chưa chọn'}</p>
+            <p><strong>📍 Từ:</strong> ${b.origin}</p>
+            <p><strong>📍 Đến:</strong> ${b.destination}</p>
+            <p><strong>🚗 Loại xe:</strong> ${renderCarType(vehicleType)}</p>
+            <p><strong>🔁 2 chiều:</strong> ${b.twoWay === 'Có' ? '✅' : '❌'}</p>
+            <p><strong>🌙 Ban đêm:</strong> ${b.night === 'Có' ? '✅' : '❌'}</p>
+            <p><strong>🕒 Gửi lúc:</strong> ${b.time}</p>
+          `;
+          listContainer.appendChild(div);
+        });
+      }
+
+      renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = '';
+      if (totalPages <= 1) return;
+
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.classList.toggle('active', i === currentPage);
+        btn.onclick = () => {
+          currentPage = i;
+          renderBookings();
+        };
+        pagination.appendChild(btn);
+      }
+    }
+
+    // 🔐 Xử lý khi đăng nhập Google thành công
+    function handleCredentialResponse(response) {
+      const decoded = parseJwt(response.credential);
+      const email = decoded.email;
+      localStorage.setItem('userEmail', email);
+      if (email === ADMIN_EMAIL) {
+        document.getElementById('deleteAllBtn').style.display = 'inline-block';
+      }
+    }
+
+    // 🧠 Hàm giải mã JWT
+    function parseJwt(token) {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+      return JSON.parse(jsonPayload);
+    }
+
+    // 🗑️ Sự kiện xoá đơn
+    document.getElementById('deleteAllBtn').addEventListener('click', () => {
+      if (confirm('Bạn có chắc chắn muốn xóa tất cả đơn hàng không?')) {
+        localStorage.removeItem('bookings');
+        location.reload();
+      }
+    });
+
+    renderBookings();
+  </script>
+</body>
+</html>
