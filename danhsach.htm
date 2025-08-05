@@ -139,21 +139,21 @@
     return JSON.parse(jsonPayload);
   }
 
-  function toggleFilters(enable) {
-    document.getElementById('searchInput').disabled = !enable;
-    document.getElementById('typeFilter').disabled = !enable;
-    document.getElementById('dateFilter').disabled = !enable;
-  }
-
   function renderCarType(type) {
-    switch(type) {
-      case '4': return '4 chỗ';
-      case '7': return '7 chỗ';
-      case '16': return '16 chỗ';
-      case 'truck': return 'Xe tải';
-      default: return type;
-    }
+  const t = String(type || '').toLowerCase();
+  switch(t) {
+    case '4':
+    case '4 chỗ': return '4 chỗ';
+    case '7':
+    case '7 chỗ': return '7 chỗ';
+    case '16':
+    case '16 chỗ': return '16 chỗ';
+    case 'truck':
+    case 'xe tải': return 'Xe tải';
+    default: return type;
   }
+}
+
 
   function formatDateToISO(dateStr) {
     if (!dateStr) return '';
@@ -201,7 +201,7 @@
 
       return (
         (!search || address.includes(search)) &&
-        (!type || vehicle === type) &&
+        (!type || renderCarType(vehicle) === renderCarType(type)) &&
         (!date || datetimeISO === date)
       );
     }).reverse();
