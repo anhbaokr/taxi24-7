@@ -14,146 +14,134 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
 
- 
   <style>
-  :root {
-    --bg-color: #121212;
-    --form-bg: #2b3a46;
-    --input-bg: #384d5a;
-    --input-focus-bg: #415768;
-    --checkbox-bg: #394b5b;
-    --text-color: #f0f0f0;
-    --primary-color: #00aaff;
-    --primary-hover: #008ecb;
-    --outline-color: #00d4ab;
-    --border-color: #5a6e7f;
-  }
+    :root {
+      --bg-color: #121212;
+      --form-bg: #2b3a46;
+      --input-bg: #384d5a;
+      --input-focus-bg: #415768;
+      --checkbox-bg: #394b5b;
+      --text-color: #f0f0f0;
+      --primary-color: #00aaff;
+      --primary-hover: #008ecb;
+      --outline-color: #00d4ab;
+      --border-color: #5a6e7f;
+    }
 
-  body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-  }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
 
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
 
-  form {
-    background-color: var(--form-bg);
-    border-radius: 10px;
-    padding: 15px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.5);
-    font-size: 14px;
-  }
+    form {
+      background-color: var(--form-bg);
+      border-radius: 10px;
+      padding: 15px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.5);
+      font-size: 14px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
 
-  h2 {
-    text-align: center;
-    font-size: 18px;
-    margin-top: 0;
-  }
+    form:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 16px rgba(0, 170, 255, 0.7);
+    }
 
-  input, select, button {
-    width: 100%;
-    padding: 7px 10px;
-    margin-bottom: 10px;
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
-    background-color: var(--input-bg);
-    color: var(--text-color);
-    font-size: 13px;
-  }
+    h2 {
+      text-align: center;
+      font-size: 18px;
+      margin-top: 0;
+    }
 
-  input:focus, select:focus {
-    outline: 2px solid var(--outline-color);
-    background-color: var(--input-focus-bg);
-  }
+    input, select, button {
+      width: 100%;
+      padding: 7px 10px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      font-size: 13px;
+    }
 
-  label {
-    font-weight: 500;
-    margin-bottom: 4px;
-    display: block;
-  }
+    input:focus, select:focus {
+      outline: 2px solid var(--outline-color);
+      background-color: var(--input-focus-bg);
+    }
 
-  .checkbox-group {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-  }
+    label {
+      font-weight: 500;
+      margin-bottom: 4px;
+      display: block;
+    }
 
-  .checkbox-group label {
-    flex: 1;
-    border: 1px solid #555;
-    border-radius: 6px;
-    padding: 6px;
-    background-color: var(--checkbox-bg);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-  }
+    .checkbox-group {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
 
-  .checkbox-group input {
-    width: auto;
-  }
+    .checkbox-group label {
+      flex: 1;
+      border: 1px solid #555;
+      border-radius: 6px;
+      padding: 6px;
+      background-color: var(--checkbox-bg);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
 
-  #map {
-    height: 150px;
-    border-radius: 10px;
-    margin-top: 10px;
-  }
+    .checkbox-group input {
+      width: auto;
+    }
 
-  #info {
-    text-align: center;
-    font-size: 13px;
-    margin: 8px 0;
-    display: none;
-  }
+    #map {
+      height: 150px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
 
-  button {
-    background-color: var(--primary-color);
-    font-weight: bold;
-    transition: background 0.3s;
-  }
+    #info {
+      text-align: center;
+      font-size: 13px;
+      margin: 8px 0;
+      display: none;
+    }
 
-  button:hover {
-    background-color: var(--primary-hover);
-  }
+    button {
+      background-color: var(--primary-color);
+      font-weight: bold;
+      transition: background 0.3s;
+    }
 
-  @media (max-width: 480px) {
-    form { font-size: 13px; }
-    input, select, button { font-size: 12px; }
-  }
+    button:hover {
+      background-color: var(--primary-hover);
+    }
 
-  input#datetime::-webkit-calendar-picker-indicator {
-    opacity: 0;
-    display: none;
-  }
-form {
-  background-color: var(--form-bg);
-  border-radius: 10px;
-  padding: 15px;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.5);
-  font-size: 14px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease; /* ✨ hiệu ứng chuyển mượt */
-}
+    @media (max-width: 480px) {
+      form { font-size: 13px; }
+      input, select, button { font-size: 12px; }
+    }
 
-form:hover {
-  transform: scale(1.02); /* ✨ phóng to nhẹ */
-  box-shadow: 0 0 16px rgba(0, 170, 255, 0.7); /* ✨ đổ bóng nổi bật hơn */
-}
-</style>
-
-
+    input#datetime::-webkit-calendar-picker-indicator {
+      opacity: 0;
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <form onsubmit="submitBooking(event)">
@@ -168,6 +156,7 @@ form:hover {
       <option value="4">🚗 Xe 4 chỗ</option>
       <option value="7">🚙 Xe 7 chỗ</option>
       <option value="16">🚌 Xe 16 chỗ</option>
+      <option value="truck">🚚 Xe tải</option>
     </select>
     <input id="datetime" placeholder="Chọn ngày giờ đi" required />
     <div class="checkbox-group">
@@ -224,15 +213,12 @@ form:hover {
     });
 
     function swapLocations() {
-  [originCoords, destinationCoords] = [destinationCoords, originCoords];
-  [originName, destinationName] = [destinationName, originName];
-
-  // Cập nhật lại giá trị input hiển thị
-  document.querySelector('#geocoder-origin input').value = originName;
-  document.querySelector('#geocoder-destination input').value = destinationName;
-
-  updateRoute();
-}
+      [originCoords, destinationCoords] = [destinationCoords, originCoords];
+      [originName, destinationName] = [destinationName, originName];
+      document.querySelector('#geocoder-origin input').value = originName;
+      document.querySelector('#geocoder-destination input').value = destinationName;
+      updateRoute();
+    }
 
     function updateRoute() {
       if (!originCoords || !destinationCoords) {
@@ -263,9 +249,6 @@ form:hover {
         originMarker = new mapboxgl.Marker({ color: '#00ff00' }).setLngLat(originCoords).addTo(map);
         destinationMarker = new mapboxgl.Marker({ color: '#ff0033' }).setLngLat(destinationCoords).addTo(map);
         map.fitBounds([originCoords, destinationCoords], { padding: 40 });
-		document.getElementById('twoWay').addEventListener('change', updateRoute);
-        document.getElementById('night').addEventListener('change', updateRoute);
-        document.getElementById('carType').addEventListener('change', updateRoute);	
       });
     }
 
@@ -274,9 +257,10 @@ form:hover {
       const isNight = document.getElementById('night').checked;
       const isTwoWay = document.getElementById('twoWay').checked;
       const pricing = {
-        4: { open: 10000, firstKm: 15000, nextKm: 11000 },
-        7: { open: 12000, firstKm: 17000, nextKm: 13000 },
-        16:{ open: 15000, firstKm: 20000, nextKm: 15000 }
+        4:    { open: 10000, firstKm: 15000, nextKm: 11000 },
+        7:    { open: 12000, firstKm: 17000, nextKm: 13000 },
+        16:   { open: 15000, firstKm: 20000, nextKm: 15000 },
+        truck:{ open: 20000, firstKm: 25000, nextKm: 18000 }
       };
       const p = pricing[car];
       let base = km <= 1 ? p.open + p.firstKm : p.open + p.firstKm + (km - 1) * p.nextKm;
@@ -303,8 +287,8 @@ form:hover {
         phone,
         origin: originName,
         destination: destinationName,
-        carType: document.getElementById('carType').value,
-        datetime: document.getElementById('datetime').value,
+        vehicle: document.getElementById('carType').value,
+        datetime,
         night: document.getElementById('night').checked ? 'Có' : 'Không',
         twoWay: document.getElementById('twoWay').checked ? 'Có' : 'Không',
         distance: document.getElementById('distance').innerText,
@@ -317,31 +301,25 @@ form:hover {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(data)
       }).then(() => {
+        let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        const masked = {
+          name: name.replace(/(.{2})(.*)/, (_, a, b) => a + '*'.repeat(b.length - 1)),
+          phone: phone.replace(/(\d{3})\d{4}(\d{3})/, '$1****$2'),
+          ...data
+        };
+        bookings.push(masked);
+        localStorage.setItem('bookings', JSON.stringify(bookings));
+
         btn.textContent = "✅ Đặt thành công!";
         setTimeout(() => window.location.reload(), 2000);
       });
     }
+
+    // Gửi thông tin chiều cao iframe
+    window.onload = () => {
+      const height = document.body.scrollHeight;
+      window.parent.postMessage({ type: 'resize-iframe', height: height }, '*');
+    };
   </script>
-  <script>
-  function resizeIframe() {
-    const height = document.documentElement.scrollHeight;
-    parent.postMessage({ iframeHeight: height }, "*");
-  }
-
-  // Gọi lại mỗi khi nội dung có thể thay đổi
-  window.addEventListener("load", resizeIframe);
-  window.addEventListener("resize", resizeIframe);
-</script>
-<script>
-  window.onload = () => {
-    const height = document.body.scrollHeight;
-    window.parent.postMessage({ type: 'resize-iframe', height: height }, '*');
-  };
-</script>
-
 </body>
 </html>
-
-
-
-
