@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Danh sách đơn đặt xe</title>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     body {
       margin: 0;
@@ -15,19 +14,12 @@
 
     .main {
       padding: 20px;
-      max-width: 700px;
+      max-width: 800px;
       margin: auto;
     }
 
     h2 {
       margin-top: 0;
-    }
-
-    .booking-form {
-      background-color: #253544;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
     }
 
     .search-bar {
@@ -56,7 +48,7 @@
 
     .booking-item strong {
       display: inline-block;
-      width: 110px;
+      width: 130px;
       color: #ccc;
     }
 
@@ -82,67 +74,44 @@
     .pagination button.active {
       background-color: #1abc9c;
     }
-
-    #deleteAllBtn {
-      display: none;
-      margin-bottom: 10px;
-      padding: 10px 15px;
-      background: #e74c3c;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    #g_id_onload, .g_id_signin {
-      margin-bottom: 15px;
-    }
   </style>
 </head>
 <body>
   <div class="main">
     <h2>📄 Danh sách đơn đặt xe 🚖 Taxi24h.Online</h2>
 
-    <!-- Google Sign-In -->
-    <div id="g_id_onload"
-         data-client_id="533150711630-i5cn7antf1h5kau067om4r3hijpqevka.apps.googleusercontent.com"
-         data-callback="handleCredentialResponse"
-         data-auto_prompt="false">
-    </div>
-    <div class="g_id_signin"
-         data-type="standard"
-         data-size="large"
-         data-theme="outline"
-         data-text="sign_in_with"
-         data-shape="rectangular"
-         data-logo_alignment="left">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Tìm theo điểm đi/đến..." oninput="renderBookings()">
+      <select id="typeFilter" onchange="renderBookings()">
+        <option value="">Tất cả loại xe</option>
+        <option value="4">4 chỗ</option>
+        <option value="7">7 chỗ</option>
+        <option value="16">16 chỗ</option>
+        <option value="truck">Xe tải</option>
+      </select>
+      <input type="date" id="dateFilter" onchange="renderBookings()">
     </div>
 
-    <!-- Nút xóa tất cả đơn hàng (ẩn theo mặc định) -->
-    <button id="deleteAllBtn">🗑️ Xóa tất cả đơn hàng</button>
-
-    <form class="booking-form" onsubmit="return false;">
-      <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Tìm theo điểm đi/đến..." oninput="renderBookings()">
-        <select id="typeFilter" onchange="renderBookings()">
-          <option value="">Tất cả loại xe</option>
-          <option value="4">4 chỗ</option>
-          <option value="7">7 chỗ</option>
-          <option value="16">16 chỗ</option>
-          <option value="truck">Xe tải</option>
-        </select>
-        <input type="date" id="dateFilter" onchange="renderBookings()">
-      </div>
-
-      <div id="bookingList"></div>
-      <div class="pagination" id="pagination"></div>
-    </form>
+    <div id="bookingList"></div>
+    <div class="pagination" id="pagination"></div>
   </div>
 
   <script>
-    const ADMIN_EMAIL = "luannvkr@gmail.com";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWLDGtBAroyEeZq5XurtRRgi_nipw62TmYN0StRL3T9vnxmLoVY5mQbBMF9NEGoG1tKw/exec";
     const ITEMS_PER_PAGE = 5;
+    let allBookings = [];
     let currentPage = 1;
+
+    async function fetchBookings() {
+      try {
+        const response = await fetch(SCRIPT_URL);
+        const data = await response.json();
+        allBookings = data.data || [];
+        renderBookings();
+      } catch (error) {
+        document.getElementById('bookingList').innerHTML = `<p>⚠️ Lỗi tải dữ liệu: ${error}</p>`;
+      }
+    }
 
     function renderCarType(type) {
       switch (type) {
@@ -155,18 +124,16 @@
     }
 
     function renderBookings() {
-      const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
       const search = document.getElementById('searchInput').value.toLowerCase();
       const type = document.getElementById('typeFilter').value;
       const date = document.getElementById('dateFilter').value;
 
-      const filtered = bookings.filter(b => {
+      const filtered = allBookings.filter(b => {
         const address = (b.origin + ' ' + b.destination).toLowerCase();
         const datetime = b.datetime ? b.datetime.slice(0, 10).split('/').reverse().join('-') : '';
-        const vehicleType = b.vehicle || b.carType || '';
         return (
           (!search || address.includes(search)) &&
-          (!type || vehicleType === type) &&
+          (!type || b.vehicle === type) &&
           (!date || datetime === date)
         );
       }).reverse();
@@ -185,17 +152,17 @@
         listContainer.innerHTML = '<p>Không tìm thấy đơn nào.</p>';
       } else {
         currentItems.forEach(b => {
-          const vehicleType = b.vehicle || b.carType || '';
           const div = document.createElement('div');
           div.className = 'booking-item';
           div.innerHTML = `
+            <p><strong>👤 Họ tên:</strong> ${b.name}</p>
             <p><strong>📅 Ngày đi:</strong> ${b.datetime || 'Chưa chọn'}</p>
             <p><strong>📍 Từ:</strong> ${b.origin}</p>
             <p><strong>📍 Đến:</strong> ${b.destination}</p>
-            <p><strong>🚗 Loại xe:</strong> ${renderCarType(vehicleType)}</p>
+            <p><strong>🚗 Loại xe:</strong> ${renderCarType(b.vehicle)}</p>
             <p><strong>🔁 2 chiều:</strong> ${b.twoWay === 'Có' ? '✅' : '❌'}</p>
             <p><strong>🌙 Ban đêm:</strong> ${b.night === 'Có' ? '✅' : '❌'}</p>
-            <p><strong>🕒 Gửi lúc:</strong> ${b.time}</p>
+            <p><strong>🕒 Gửi lúc:</strong> ${b.time || ''}</p>
           `;
           listContainer.appendChild(div);
         });
@@ -221,34 +188,7 @@
       }
     }
 
-    // 🔐 Xử lý khi đăng nhập Google thành công
-    function handleCredentialResponse(response) {
-      const decoded = parseJwt(response.credential);
-      const email = decoded.email;
-      localStorage.setItem('userEmail', email);
-      if (email === ADMIN_EMAIL) {
-        document.getElementById('deleteAllBtn').style.display = 'inline-block';
-      }
-    }
-
-    // 🧠 Hàm giải mã JWT
-    function parseJwt(token) {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
-        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-      return JSON.parse(jsonPayload);
-    }
-
-    // 🗑️ Sự kiện xoá đơn
-    document.getElementById('deleteAllBtn').addEventListener('click', () => {
-      if (confirm('Bạn có chắc chắn muốn xóa tất cả đơn hàng không?')) {
-        localStorage.removeItem('bookings');
-        location.reload();
-      }
-    });
-
-    renderBookings();
+    fetchBookings();
   </script>
 </body>
 </html>
