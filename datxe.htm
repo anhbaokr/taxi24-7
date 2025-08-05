@@ -30,25 +30,20 @@
 
     body {
       margin: 0;
-      padding: 0;
+      padding: 20px;
       font-family: 'Segoe UI', sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
       display: flex;
       justify-content: center;
-      padding: 20px;
-    }
-
-    *, *::before, *::after {
-      box-sizing: border-box;
     }
 
     form {
       background-color: var(--form-bg);
       border-radius: 10px;
       padding: 15px;
-      width: 100%;
       max-width: 400px;
+      width: 100%;
       box-shadow: 0 0 8px rgba(0,0,0,0.5);
       font-size: 14px;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -57,12 +52,6 @@
     form:hover {
       transform: scale(1.02);
       box-shadow: 0 0 16px rgba(0, 170, 255, 0.7);
-    }
-
-    h2 {
-      text-align: center;
-      font-size: 18px;
-      margin-top: 0;
     }
 
     input, select, button {
@@ -81,12 +70,6 @@
       background-color: var(--input-focus-bg);
     }
 
-    label {
-      font-weight: 500;
-      margin-bottom: 4px;
-      display: block;
-    }
-
     .checkbox-group {
       display: flex;
       justify-content: space-between;
@@ -95,18 +78,14 @@
 
     .checkbox-group label {
       flex: 1;
-      border: 1px solid #555;
-      border-radius: 6px;
-      padding: 6px;
       background-color: var(--checkbox-bg);
+      padding: 6px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 13px;
-    }
-
-    .checkbox-group input {
-      width: auto;
+      border: 1px solid #555;
     }
 
     #map {
@@ -122,24 +101,13 @@
       display: none;
     }
 
-    button {
-      background-color: var(--primary-color);
-      font-weight: bold;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background-color: var(--primary-hover);
+    input#datetime::-webkit-calendar-picker-indicator {
+      display: none;
     }
 
     @media (max-width: 480px) {
       form { font-size: 13px; }
       input, select, button { font-size: 12px; }
-    }
-
-    input#datetime::-webkit-calendar-picker-indicator {
-      opacity: 0;
-      display: none;
     }
   </style>
 </head>
@@ -148,11 +116,11 @@
     <h2>🚖 Đặt Xe</h2>
     <input type="text" id="name" placeholder="Họ và tên" required />
     <input type="tel" id="phone" placeholder="Số điện thoại (10 số)" required />
-    <div id="geocoder-origin" class="geocoder"></div>
+    <div id="geocoder-origin"></div>
     <div style="height:5px;"></div>
-    <div id="geocoder-destination" class="geocoder"></div>
+    <div id="geocoder-destination"></div>
     <button type="button" onclick="swapLocations()">🔁 Đổi chiều</button>
-    <select id="carType">
+    <select id="carType" name="car">
       <option value="4">🚗 Xe 4 chỗ</option>
       <option value="7">🚙 Xe 7 chỗ</option>
       <option value="16">🚌 Xe 16 chỗ</option>
@@ -171,7 +139,7 @@
     <div id="map"></div>
   </form>
 
-  <!-- JS -->
+  <!-- Mapbox & JS -->
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
   <script>
@@ -183,7 +151,7 @@
       minDate: "today"
     });
 
-    mapboxgl.accessToken = 'pk.eyJ1IjoidGF4aTI0aC1vbmxpbmUiLCJhIjoiY21kcm5xeWk2MGw1NDJxb25zY3V4eHd4MCJ9.K4wVs6Xwelw6Ic6mXK1FPg';
+    mapboxgl.accessToken = 'pk.eyJ1IjoidGF4aTI0aC1vbmxpbmUiLCJhIjoiY21kcm5xeWk2MGw1NDJxb25zY3V4eHd4MCJ9.K4wVs6Xwelw6Ic6mXK1FPg'; // ← Thay bằng token thực tế
     const map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/dark-v10',
@@ -202,22 +170,21 @@
 
     geocoderOrigin.on('result', e => {
       originCoords = e.result.geometry.coordinates;
-      originName = e.result.text || e.result.place_name;
+      originName = e.result.place_name;
       updateRoute();
     });
 
     geocoderDestination.on('result', e => {
       destinationCoords = e.result.geometry.coordinates;
-      destinationName = e.result.text || e.result.place_name;
+      destinationName = e.result.place_name;
       updateRoute();
     });
 
     function swapLocations() {
       [originCoords, destinationCoords] = [destinationCoords, originCoords];
       [originName, destinationName] = [destinationName, originName];
-      document.querySelector('#geocoder-origin input').value = originName;
-      document.querySelector('#geocoder-destination input').value = destinationName;
-      updateRoute();
+      geocoderOrigin.query(originName);
+      geocoderDestination.query(destinationName);
     }
 
     function updateRoute() {
@@ -227,30 +194,43 @@
       }
 
       const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${originCoords.join(',')};${destinationCoords.join(',')}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
-      fetch(url).then(res => res.json()).then(data => {
-        const route = data.routes[0];
-        const distanceKm = route.distance / 1000;
-        const price = calculatePrice(distanceKm);
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          if (!data.routes || data.routes.length === 0) {
+            alert("Không tìm thấy tuyến đường phù hợp.");
+            return;
+          }
 
-        document.getElementById('info').style.display = 'block';
-        document.getElementById('distance').innerText = `📏 ${distanceKm.toFixed(2)} km`;
-        document.getElementById('price').innerText = `💰 ${price.toLocaleString()} VND`;
+          const route = data.routes[0];
+          const km = route.distance / 1000;
+          const price = calculatePrice(km);
 
-        if (map.getSource('route')) {
-          map.getSource('route').setData(route.geometry);
-        } else {
-          map.addSource('route', { type: 'geojson', data: route.geometry });
-          map.addLayer({ id: 'route', type: 'line', source: 'route', paint: { 'line-color': '#00ff99', 'line-width': 4 } });
-        }
+          document.getElementById('info').style.display = 'block';
+          document.getElementById('distance').innerText = `📏 ${km.toFixed(2)} km`;
+          document.getElementById('price').innerText = `💰 ${price.toLocaleString()} VND`;
 
-        if (originMarker) originMarker.remove();
-        if (destinationMarker) destinationMarker.remove();
+          if (map.getSource('route')) {
+            map.getSource('route').setData(route.geometry);
+          } else {
+            map.addSource('route', { type: 'geojson', data: route.geometry });
+            map.addLayer({ id: 'route', type: 'line', source: 'route', paint: { 'line-color': '#00ff99', 'line-width': 4 } });
+          }
 
-        originMarker = new mapboxgl.Marker({ color: '#00ff00' }).setLngLat(originCoords).addTo(map);
-        destinationMarker = new mapboxgl.Marker({ color: '#ff0033' }).setLngLat(destinationCoords).addTo(map);
-        map.fitBounds([originCoords, destinationCoords], { padding: 40 });
-      });
+          if (originMarker) originMarker.remove();
+          if (destinationMarker) destinationMarker.remove();
+
+          originMarker = new mapboxgl.Marker({ color: '#00ff00' }).setLngLat(originCoords).addTo(map);
+          destinationMarker = new mapboxgl.Marker({ color: '#ff0033' }).setLngLat(destinationCoords).addTo(map);
+
+          map.fitBounds([originCoords, destinationCoords], { padding: 40 });
+        })
+        .catch(() => alert("Không thể tính toán tuyến đường."));
     }
+
+    document.getElementById('carType').addEventListener('change', updateRoute);
+    document.getElementById('night').addEventListener('change', updateRoute);
+    document.getElementById('twoWay').addEventListener('change', updateRoute);
 
     function calculatePrice(km) {
       const car = document.getElementById('carType').value;
@@ -274,8 +254,9 @@
       const name = document.getElementById('name').value.trim();
       const phone = document.getElementById('phone').value.trim();
       const datetime = document.getElementById('datetime').value.trim();
+
       if (!datetime) return alert("Vui lòng chọn ngày giờ đi!");
-      if (!/^(0|\+84)[0-9]{9}$/.test(phone)) return alert("Số điện thoại không hợp lệ!");
+      if (!/^0\d{9}$/.test(phone)) return alert("Số điện thoại không hợp lệ!");
       if (!originCoords || !destinationCoords) return alert("Vui lòng chọn điểm đi và đến!");
 
       const btn = document.getElementById("submitBtn");
@@ -295,30 +276,26 @@
         price: document.getElementById('price').innerText
       };
 
-      fetch("https://script.google.com/macros/s/AKfycbyWCfUqmgsdL9lI51VlI5yLLInx1D3k7N-F6zxRkAWs3R9R2onr0AFB7aMhiBtRyGcZzw/exec", {
+      fetch("https://script.google.com/macros/s/AKfycby7h9Ayxsjycoq99INFiSzhhh7p3N7Kdzn0_ouBg4QYt6imBV6mzBV-jIgRnY034MAs1Q/exec", {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(data)
-      }).then(() => {
-        let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
-        const masked = {
-          name: name.replace(/(.{2})(.*)/, (_, a, b) => a + '*'.repeat(b.length - 1)),
-          phone: phone.replace(/(\d{3})\d{4}(\d{3})/, '$1****$2'),
-          ...data
-        };
-        bookings.push(masked);
-        localStorage.setItem('bookings', JSON.stringify(bookings));
-
+      })
+      .then(() => {
         btn.textContent = "✅ Đặt thành công!";
         setTimeout(() => window.location.reload(), 2000);
+      })
+      .catch(() => {
+        alert("Gửi không thành công. Vui lòng thử lại!");
+        btn.disabled = false;
+        btn.textContent = "📩 Đặt xe";
       });
     }
 
-    // Gửi thông tin chiều cao iframe
     window.onload = () => {
       const height = document.body.scrollHeight;
-      window.parent.postMessage({ type: 'resize-iframe', height: height }, '*');
+      window.parent.postMessage({ type: 'resize-iframe', height }, '*');
     };
   </script>
 </body>
