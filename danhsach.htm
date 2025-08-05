@@ -108,15 +108,15 @@
   </div>
 
   <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Tìm theo điểm đi/đến..." oninput="renderBookings()" disabled />
-    <select id="typeFilter" onchange="renderBookings()" disabled>
+    <input type="text" id="searchInput" placeholder="Tìm theo điểm đi/đến..." />
+    <select id="typeFilter" onchange="renderBookings()">
       <option value="">Tất cả loại xe</option>
       <option value="4">4 chỗ</option>
       <option value="7">7 chỗ</option>
       <option value="16">16 chỗ</option>
       <option value="truck">Xe tải</option>
     </select>
-    <input type="date" id="dateFilter" onchange="renderBookings()" disabled />
+    <input type="date" id="dateFilter" onchange="renderBookings()" />
   </div>
 
   <div id="bookingList"></div>
@@ -301,16 +301,11 @@
     document.querySelector('.g_id_signin').style.display = 'none';
 
     // Chỉ admin mới hiện nút xóa và bật bộ lọc tìm kiếm
-    if(userEmail === 'luannvkr@gmail.com') {  // Thay email admin của bạn
-      document.getElementById('deleteBtn').style.display = 'inline-block';
-      toggleFilters(true);
-    } else {
-      toggleFilters(false);
-    }
-
-    document.getElementById('signOutBtn').style.display = 'inline-block';
-
-    fetchBookings();
+    if(userEmail === 'luannvkr@gmail.com') {
+  document.getElementById('deleteBtn').style.display = 'inline-block';
+}
+  document.getElementById('signOutBtn').style.display = 'inline-block';
+   fetchBookings();
   }
 
 
@@ -330,4 +325,5 @@
 </script>
 </body>
 </html>
+
 
