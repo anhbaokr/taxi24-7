@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Danh sách đơn đặt xe với Google Login</title>
+  <title>Danh sách đơn đặt xe</title>
   <style>
     body {
       margin: 0;
@@ -66,7 +66,6 @@
     .pagination button.active {
       background-color: #1abc9c;
     }
-    /* Login & buttons */
     #loginSection {
       margin-bottom: 15px;
     }
@@ -108,15 +107,15 @@
   </div>
 
   <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Tìm theo điểm đi/đến..." oninput="renderBookings()" disabled />
-    <select id="typeFilter" onchange="renderBookings()" disabled>
+    <input type="text" id="searchInput" placeholder="Tìm theo điểm đi/đến..." />
+    <select id="typeFilter" onchange="renderBookings()">
       <option value="">Tất cả loại xe</option>
       <option value="4">4 chỗ</option>
       <option value="7">7 chỗ</option>
       <option value="16">16 chỗ</option>
       <option value="truck">Xe tải</option>
     </select>
-    <input type="date" id="dateFilter" onchange="renderBookings()" disabled />
+    <input type="date" id="dateFilter" onchange="renderBookings()" />
   </div>
 
   <div id="bookingList"></div>
@@ -140,7 +139,6 @@
     return JSON.parse(jsonPayload);
   }
 
-  // Bật / tắt các input tìm kiếm
   function toggleFilters(enable) {
     document.getElementById('searchInput').disabled = !enable;
     document.getElementById('typeFilter').disabled = !enable;
@@ -164,6 +162,21 @@
     return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
   }
 
+  function maskName(name) {
+    name = String(name || '').trim();
+    if (name.length <= 4) return name[0] + '*'.repeat(name.length - 1);
+    const visibleStart = name[0];
+    const visibleEnd = name.slice(-3);
+    const maskedMiddle = '*'.repeat(name.length - 4);
+    return visibleStart + maskedMiddle + visibleEnd;
+  }
+
+  function maskPhone(phone) {
+    phone = String(phone || '');
+    if (phone.length < 7) return phone;
+    return phone.substring(0, 3) + '****' + phone.substring(phone.length - 3);
+  }
+
   async function fetchBookings() {
     try {
       const response = await fetch(SCRIPT_URL);
@@ -184,7 +197,6 @@
       const address = ((b["Từ"] || '') + ' ' + (b["Đến"] || '')).toLowerCase();
       const datetimeRaw = b["Ngày giờ đi"] || '';
       const datetimeISO = formatDateToISO(datetimeRaw.split(' ')[0]);
-
       const vehicle = b["Loại xe"] || '';
 
       return (
@@ -211,8 +223,11 @@
         const div = document.createElement('div');
         div.className = 'booking-item';
 
-        const displayName = b["Họ tên"] || "";
-        const displayPhone = b["SĐT"] || "(Không có số)";
+        const rawName = b["Họ tên"] || "";
+        const rawPhone = b["SĐT"] || "";
+        const displayName = (userEmail === 'luannvkr@gmail.com') ? rawName : maskName(rawName);
+        const displayPhone = (userEmail === 'luannvkr@gmail.com') ? rawPhone : maskPhone(rawPhone);
+
         const datetimeRaw = b["Ngày giờ đi"] || '';
         const origin = b["Từ"] || '';
         const destination = b["Đến"] || '';
@@ -258,7 +273,6 @@
     }
   }
 
-  // Xóa dữ liệu đơn đặt xe trên Google Sheets
   document.getElementById('deleteBtn').onclick = async () => {
     if(!confirm('Bạn có chắc chắn muốn xóa toàn bộ đơn đặt xe trên Google Sheets không?')) return;
 
@@ -276,7 +290,6 @@
     }
   };
 
-  // Xử lý đăng nhập Google
   function handleCredentialResponse(response) {
     const payload = parseJwt(response.credential);
     userEmail = payload.email;
@@ -284,31 +297,22 @@
 
     document.querySelector('.g_id_signin').style.display = 'none';
 
-    // Chỉ admin mới hiện nút xóa và bật bộ lọc tìm kiếm
-    if(userEmail === 'luannvkr@gmail.com') {  // Thay email admin của bạn
+    if(userEmail === 'luannvkr@gmail.com') {
       document.getElementById('deleteBtn').style.display = 'inline-block';
-      toggleFilters(true);
-    } else {
-      toggleFilters(false);
     }
 
     document.getElementById('signOutBtn').style.display = 'inline-block';
-
     fetchBookings();
   }
 
-  // Đăng xuất
   document.getElementById('signOutBtn').onclick = () => {
     userEmail = null;
     document.getElementById('deleteBtn').style.display = 'none';
     document.getElementById('signOutBtn').style.display = 'none';
     document.querySelector('.g_id_signin').style.display = 'inline-block';
-    toggleFilters(false);
-    document.getElementById('bookingList').innerHTML = '';
+    fetchBookings();
   };
 
-  // Khởi tạo
-  toggleFilters(false);
   fetchBookings();
 </script>
 </body>
