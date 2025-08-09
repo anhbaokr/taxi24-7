@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Chat (400x600)</title>
+
+<!-- Emoji picker (modern) -->
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+
+<style>
+  :root{
+    --bg:#e9edef; --card:#fff; --chat-bg:#f0f2f5; --me:#0084ff; --muted:#6b7280;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:#f3f4f6;
+    display:flex;align-items:center;justify-content:center;}
+  #container{
+    width:400px;height:600px;background:var(--card);border-radius:10px;overflow:hidden;
+    box-shadow:0 8px 30px rgba(2,6,23,0.12);display:flex;flex-direction:column;position:relative;
+  }
+  header{padding:12px 14px;border-bottom:1px solid #eef2f6;display:flex;align-items:center;justify-content:space-between}
+  header .title{font-weight:700}
+  header .small{font-size:12px;color:var(--muted)}
+
+  /* messages area */
+  #messages{flex:1;padding:12px;overflow:auto;background:var(--chat-bg);display:flex;flex-direction:column;gap:10px}
+  .row{display:flex;align-items:flex-end;gap:8px}
+  .row.me{justify-content:flex-end}
+  .avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#f0f6ff,#eaf3ff);color:#0f172a;font-weight:700}
+  .bubble{max-width:72%;padding:8px 12px;border-radius:12px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,0.03);
+    white-space:pre-wrap;word-break:break-word;font-size:14px;line-height:1.35}
+  .bubble.me{background:linear-gradient(180deg,var(--me),#045a9a);color:#fff}
+  .meta{margin-top:6px;font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center}
+  .controls{display:flex;gap:8px;align-items:center}
+  .controls button{background:none;border:none;cursor:pointer;padding:4px;border-radius:6px}
+  .controls button:hover{background:rgba(0,0,0,0.04)}
+  .like-count{font-weight:700;margin-left:4px}
+
+  /* composer */
+  #composer{padding:10px;border-top:1px solid #eef2f6;background:var(--card);display:flex;flex-direction:column;gap:8px}
+  .top-row{display:flex;align-items:center;gap:8px;justify-content:space-between}
+  #nameDisplay{font-size:13px;color:var(--muted);background:#f7fafc;padding:6px 8px;border-radius:8px;border:1px solid #eef2f6}
+  .quick-emojis{display:flex;gap:8px}
+  .quick-emojis button{border:none;background:transparent;font-size:20px;cursor:pointer;padding:4px}
+  .composer-row{display:flex;gap:8px;align-items:flex-end}
+  #textInput{flex:1;min-height:42px;max-height:120px;padding:10px;border-radius:14px;border:1px solid #e6eef7;
+    font-size:14px;outline:none;resize:none;overflow:auto}
+  #emojiToggle, #sendBtn{width:42px;height:42px;border-radius:50%;border:none;cursor:pointer}
+  #emojiToggle{background:#f3f4f6}
+  #sendBtn{background:var(--me);color:#fff;font-weight:700}
+  /* emoji picker */
+  emoji-picker{position:absolute;right:12px;bottom:92px;z-index:1000;display:none;border-radius:8px;box-shadow:0 6px 20px rgba(2,6,23,0.12)}
+
+  /* name modal */
+  #nameModal{position:absolute;left:0;top:0;right:0;bottom:0;background:rgba(2,6,23,0.35);display:flex;align-items:center;justify-content:center}
+  #nameBox{width:320px;background:white;padding:18px;border-radius:10px;box-shadow:0 8px 30px rgba(2,6,23,0.16);display:flex;flex-direction:column;gap:10px}
+  #nameBox input{padding:10px;border-radius:8px;border:1px solid #e6eef7;font-size:14px}
+  #nameBox button{padding:10px;border-radius:8px;border:none;background:var(--me);color:white;cursor:pointer}
+  /* typing status */
+  #typingStatus{font-size:13px;color:var(--muted);padding:0 12px 6px 12px;min-height:18px}
+</style>
+</head>
+<body>
+  <div id="container" role="application" aria-label="Chat app">
+    <header>
+      <div>
+        <div class="title">Messenger</div>
+        <div class="small">Chat qua Google Sheets</div>
+      </div>
+      <div id="headerRight" class="small">Online</div>
+    </header>
+
+    <div id="messages" aria-live="polite"></div>
+    <div id="typingStatus" aria-hidden="true"></div>
+
+    <div id="composer" style="display:none;">
+      <div class="top-row">
+        <div id="nameDisplay">Bạn: <span id="nameText">--</span></div>
+      </div>
+
+      <div class="top-row">
+        <div class="quick-emojis" aria-hidden="false">
+          <button class="quick-emoji">😀</button>
+          <button class="quick-emoji">😂</button>
+          <button class="quick-emoji">😍</button>
+          <button class="quick-emoji">👍</button>
+          <button class="quick-emoji">❤️</button>
+        </div>
+        <div class="small" style="color:var(--muted);font-size:12px">Shift+Enter = xuống dòng</div>
+      </div>
+
+      <div class="composer-row">
+        <button id="emojiToggle" title="Emoji">😊</button>
+        <textarea id="textInput" placeholder="Nhập tin nhắn..." rows="2" aria-label="Nội dung tin nhắn"></textarea>
+        <button id="sendBtn" title="Gửi (Enter)">➤</button>
+		
+      </div>
+    </div>
+
+    <!-- emoji-picker element (module) -->
+    <emoji-picker id="emojiPicker"></emoji-picker>
+
+    <!-- name modal -->
+    <div id="nameModal" >
+      <div id="nameBox">
+        <div style="font-weight:700">Xin chào 👋</div>
+        <div style="color:#6b7280;font-size:13px">Nhập tên hiển thị để tham gia chat (sẽ lưu trên trình duyệt)</div>
+        <input id="nameInput" placeholder="Tên hiển thị (VD: An Nguyen)" maxlength="30" autocomplete="off" />
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button id="nameSave">Vào chat</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ====== CẤU HÌNH ====== */
+const API_URL = "https://script.google.com/macros/s/AKfycbzSfzG3hwvYYqqNP-5VDMSDbzRAWUUMRLXTfZSf5foMozc1G4S20L9UUSG3saUOVDpN8A/exec"; // <-- Thay URL Web App ở đây
+/* ======================= */
+
+const messagesEl = document.getElementById('messages');
+const textInput = document.getElementById('textInput');
+const sendBtn = document.getElementById('sendBtn');
+const emojiToggle = document.getElementById('emojiToggle');
+const emojiPicker = document.getElementById('emojiPicker');
+const quickEmojiButtons = document.querySelectorAll('.quick-emoji');
+const nameModal = document.getElementById('nameModal');
+const nameInput = document.getElementById('nameInput');
+const nameSave = document.getElementById('nameSave');
+const nameDisplayText = document.getElementById('nameText');
+const composer = document.getElementById('composer');
+const typingStatusEl = document.getElementById('typingStatus');
+
+let userName = localStorage.getItem('chatName') || '';
+let pollTimer = null;
+let typing = false;
+let typingTimeout = null;
+
+function makeBubbleText(text) {
+  const div = document.createElement('div');
+  div.className = 'bubble';
+  div.textContent = text;
+  return div;
+}
+
+function showChat() {
+  nameModal.style.display = 'none';
+  composer.style.display = 'flex';
+  nameDisplayText.textContent = userName;
+  startPolling();
+  textInput.focus();
+}
+
+function ensureName() {
+  if (!userName) {
+    nameModal.style.display = 'flex';
+    composer.style.display = 'none';
+    nameInput.value = '';
+    nameInput.focus();
+  } else {
+    showChat();
+  }
+}
+
+nameSave.addEventListener('click', () => {
+  const v = nameInput.value.trim();
+  if (!v) return alert('Vui lòng nhập tên hiển thị');
+  userName = v;
+  localStorage.setItem('chatName', userName);
+  showChat();
+  loadMessages();
+});
+
+nameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    nameSave.click();
+  }
+});
+
+/* POLLING: load messages */
+async function loadMessages(){
+  if (!API_URL || API_URL.includes('PASTE_YOUR')) {
+    messagesEl.innerHTML = '';
+    const p = document.createElement('div');
+    p.style.color = '#7c8794';
+    p.textContent = 'Chưa cấu hình API_URL. Dán URL Web App vào mã để chat thật.';
+    messagesEl.appendChild(p);
+    return;
+  }
+  try {
+    const res = await fetch(API_URL, {cache:'no-store'});
+    if (!res.ok) throw new Error('Network error');
+    const json = await res.json();
+    const messages = Array.isArray(json) ? json : (json.messages || []);
+    const typingUsers = Array.isArray(json) ? [] : (json.typingUsers || json.typing || []);
+    renderMessages(messages);
+    renderTyping(typingUsers);
+  } catch (e) {
+    console.error('loadMessages error', e);
+  }
+}
+
+function renderMessages(list){
+  list.sort((a,b) => {
+    const ta = new Date(a.timestamp || a.id || 0).getTime();
+    const tb = new Date(b.timestamp || b.id || 0).getTime();
+    return ta - tb;
+  });
+  messagesEl.innerHTML = '';
+  list.forEach(item => {
+    const isMe = String(item.name || '') === String(userName || '');
+    const row = document.createElement('div');
+    row.className = 'row' + (isMe ? ' me' : '');
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    avatar.textContent = (item.name || '?').slice(0,1).toUpperCase();
+
+    const container = document.createElement('div');
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble' + (isMe ? ' me' : '');
+    bubble.textContent = item.message || '';
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    const who = document.createElement('div');
+    who.textContent = item.name || 'Ẩn danh';
+    who.style.fontWeight = '600';
+    who.style.marginRight = '8px';
+    const time = document.createElement('div');
+    time.className = 'timestamp';
+    if (item.timestamp) {
+      const d = new Date(item.timestamp);
+      time.textContent = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    } else time.textContent = '';
+
+    const controls = document.createElement('div');
+    controls.className = 'controls';
+
+    const likeBtn = document.createElement('button');
+    likeBtn.title = 'Like';
+    likeBtn.innerHTML = '👍';
+    const likeCount = document.createElement('span');
+    likeCount.className = 'like-count';
+    likeCount.textContent = String(item.likeCount || item.likes || 0);
+
+    likeBtn.addEventListener('click', () => doLike(item.id ?? item.timestamp ?? item._rowId));
+
+    const replyBtn = document.createElement('button');
+    replyBtn.title = 'Reply';
+    replyBtn.innerHTML = '↩️';
+    replyBtn.addEventListener('click', () => {
+      const preview = (item.message || '').split('\n')[0];
+      const prefix = `↩ ${item.name || 'Ai đó'}: ${preview}\n`;
+      insertAtCursor(textInput, prefix);
+      textInput.focus();
+    });
+
+    controls.appendChild(likeBtn);
+    controls.appendChild(likeCount);
+    controls.appendChild(replyBtn);
+
+    meta.appendChild(who);
+    meta.appendChild(time);
+    meta.appendChild(controls);
+
+    container.appendChild(bubble);
+    container.appendChild(meta);
+
+    if (isMe) {
+      row.appendChild(container);
+      row.appendChild(avatar);
+    } else {
+      row.appendChild(avatar);
+      row.appendChild(container);
+    }
+
+    messagesEl.appendChild(row);
+  });
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+/* Insert text at cursor position in textarea */
+function insertAtCursor(input, text) {
+  const start = input.selectionStart;
+  const end = input.selectionEnd;
+  const val = input.value;
+  input.value = val.slice(0, start) + text + val.slice(end);
+  const pos = start + text.length;
+  input.selectionStart = input.selectionEnd = pos;
+}
+
+/* Send message */
+let sending = false;
+async function doSend() {
+  const msg = textInput.value;
+  if (!userName) { ensureName(); return; }
+  if (!msg || !msg.trim()) return;
+  if (!API_URL || API_URL.includes('PASTE_YOUR')) {
+    const demo = { id: Date.now(), timestamp: new Date().toISOString(), name: userName, message: msg, likeCount:0 };
+    renderMessages([...(Array.from(messagesEl.children).length?[]:[])]); // noop
+    textInput.value = '';
+    return;
+  }
+  if (sending) return;
+  sending = true;
+  sendBtn.disabled = true;
+  try {
+    const body = { action: 'send', name: userName, message: msg };
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    textInput.value = '';
+    sendTyping(false);
+    await loadMessages();
+  } catch (e) {
+    console.error('send error', e);
+  } finally {
+    sending = false;
+    sendBtn.disabled = false;
+    textInput.focus();
+  }
+}
+
+/* Like */
+async function doLike(id){
+  if (!id) return;
+  try {
+    await fetch(API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'like', id })
+    });
+    await loadMessages();
+  } catch(e){ console.error('like err', e); }
+}
+
+/* Typing indicator */
+function sendTyping(state) {
+  if (!API_URL || API_URL.includes('PASTE_YOUR')) return;
+  try {
+    fetch(API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'typing', name: userName, typing: !!state })
+    }).catch(()=>{});
+  } catch(e){ console.error(e); }
+}
+
+/* Local input handlers for typing detection */
+textInput.addEventListener('input', () => {
+  if (!userName) return;
+  if (!typing) {
+    typing = true;
+    sendTyping(true);
+  }
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(()=> {
+    typing = false;
+    sendTyping(false);
+  }, 1400);
+});
+
+/* Enter to send, Shift+Enter newline */
+textInput.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Enter' && !ev.shiftKey) {
+    ev.preventDefault();
+    doSend();
+  }
+});
+
+sendBtn.addEventListener('click', () => {
+  doSend();
+});
+
+ensureName();
+
+
+/* Emoji handling */
+emojiToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const visible = getComputedStyle(emojiPicker).display !== 'none';
+  emojiPicker.style.display = visible ? 'none' : 'block';
+});
+
+document.addEventListener('click', () => {
+  emojiPicker.style.display = 'none';
+});
+
+textInput.addEventListener('click', () => {
+  emojiPicker.style.display = 'none';
+});
+
+/* Quick emoji buttons */
+quickEmojiButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    insertAtCursor(textInput, btn.textContent);
+    textInput.focus();
+  });
+});
+
+/* emoji-picker-element event */
+emojiPicker.addEventListener('emoji-click', (ev) => {
+  const emo = ev.detail.unicode;
+  insertAtCursor(textInput, emo);
+});
+
+/* Render typing users list */
+function renderTyping(typingUsers) {
+  if (!Array.isArray(typingUsers) || typingUsers.length === 0) {
+    typingStatusEl.textContent = '';
+    return;
+  }
+  const others = typingUsers.filter(n => String(n) !== String(userName));
+  if (others.length === 0) { typingStatusEl.textContent = ''; return; }
+  typingStatusEl.textContent = others.join(', ') + (others.length === 1 ? ' đang nhập...' : ' đang nhập...');
+}
+
+/* Polling loop */
+function startPolling() {
+  if (pollTimer) clearInterval(pollTimer);
+  loadMessages();
+  pollTimer = setInterval(loadMessages, 5000);
+}
+
+ensureName();
+
+</script>
+
+</body>
+</html>
