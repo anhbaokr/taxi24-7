@@ -128,8 +128,13 @@
     </select>
     <input id="datetime" placeholder="Chọn ngày giờ đi" required />
     <div class="checkbox-group">
-      <label><input type="checkbox" id="twoWay" name="twoWay" value="true"> ↔️ 2 chiều </label>
-      <label><input type="checkbox" id="nightFee" name="nightFee" value="true"> 🌙 Phụ phí ban đêm </label>
+      <label>
+  <input type="checkbox" id="twoWay" name="twoWay" value="Có"> ↔️ 2 chiều
+</label>
+
+<label>
+  <input type="checkbox" id="nightFee" name="nightFee" value="Có"> 🌙 Phụ phí ban đêm
+</label>
 
     </div>
     <div id="info">
@@ -277,7 +282,7 @@
         price: document.getElementById('price').innerText
       };
 
-      fetch("https://script.google.com/macros/s/AKfycbykxTVj-B6wC0rHSITzIcW0UydO8TXSD3w0bSqDtK2NjSoQdKwwRS7Iome7-DvF8h6IEQ/exec", {
+      fetch("https://script.google.com/macros/s/AKfycbz6oqNAG-_-9Ybd6PVRPWOzTwINki1z5WwYfry9Fd2xBIz0qutj8UPpVe2iuq5KL2yJQA/exec", {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -301,6 +306,7 @@
   </script>
 </body>
 </html>
+
 
 
 
