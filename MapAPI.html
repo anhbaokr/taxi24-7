@@ -1,73 +1,46 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bản đồ Taxi24h</title>
-<style>
-  #map {
-    height: 500px;
-    width: 100%;
-  }
-  body {
-    font-family: Arial, sans-serif;
-    padding: 0;
-    margin: 0;
-  }
-  #pac-input {
-    margin: 10px;
-    padding: 8px;
-    width: 300px;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Bản đồ TrackAsia - Hà Nội</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
+  <style>
+    body, html, #map {
+      margin: 0; padding: 0; height: 100vh; width: 100vw;
+    }
+  </style>
 </head>
 <body>
 
-<input id="pac-input" class="controls" type="text" placeholder="Nhập địa điểm...">
 <div id="map"></div>
 
 <script>
-function initMap() {
-  const defaultLocation = { lat: 10.762622, lng: 106.660172 }; // Hồ Chí Minh
+  const API_KEY = "0dfb3c4c83ebea6ae11754971709ddea53";
 
-  const map = new google.maps.Map(document.getElementById("map"), {
-    center: defaultLocation,
-    zoom: 13
+  mapboxgl.accessToken = API_KEY;
+  const map = new mapboxgl.Map({
+    container: 'map',
+    style: `https://maps.track-asia.com/styles/v1/trackasia/streets-v11/style.json?key=${API_KEY}`,
+    center: [105.854444, 21.029167],
+    zoom: 12
   });
 
-  const input = document.getElementById("pac-input");
-  const autocomplete = new google.maps.places.Autocomplete(input);
-  autocomplete.bindTo("bounds", map);
-
-  const infowindow = new google.maps.InfoWindow();
-  const marker = new google.maps.Marker({
-    map: map,
-    anchorPoint: new google.maps.Point(0, -29)
+  map.on('error', (e) => {
+    console.error('Map error:', e.error);
+    alert('Lỗi bản đồ: ' + e.error.message);
   });
 
-  autocomplete.addListener("place_changed", () => {
-    infowindow.close();
-    marker.setVisible(false);
-    const place = autocomplete.getPlace();
-    if (!place.geometry || !place.geometry.location) {
-      alert("Không tìm thấy vị trí!");
-      return;
-    }
-    if (place.geometry.viewport) {
-      map.fitBounds(place.geometry.viewport);
-    } else {
-      map.setCenter(place.geometry.location);
-      map.setZoom(17);
-    }
-    marker.setPosition(place.geometry.location);
-    marker.setVisible(true);
-    infowindow.setContent(`<div><strong>${place.name}</strong><br>${place.formatted_address}</div>`);
-    infowindow.open(map, marker);
-  });
-}
+  map.addControl(new mapboxgl.NavigationControl());
+
+  new mapboxgl.Marker()
+    .setLngLat([105.854444, 21.029167])
+    .setPopup(new mapboxgl.Popup().setHTML("<h4>Hà Nội</h4><p>Thủ đô Việt Nam</p>"))
+    .addTo(map);
 </script>
 
-<!-- Thay YOUR_API_KEY bằng key của bạn -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAwA22DfNHrWxK5CLs8SnQPzqkLcBwe2Kg&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>
