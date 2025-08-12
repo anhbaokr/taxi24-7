@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bản đồ Taxi24h</title>
+<style>
+  #map {
+    height: 500px;
+    width: 100%;
+  }
+  body {
+    font-family: Arial, sans-serif;
+    padding: 0;
+    margin: 0;
+  }
+  #pac-input {
+    margin: 10px;
+    padding: 8px;
+    width: 300px;
+  }
+</style>
+</head>
+<body>
+
+<input id="pac-input" class="controls" type="text" placeholder="Nhập địa điểm...">
+<div id="map"></div>
+
+<script>
+function initMap() {
+  const defaultLocation = { lat: 10.762622, lng: 106.660172 }; // Hồ Chí Minh
+
+  const map = new google.maps.Map(document.getElementById("map"), {
+    center: defaultLocation,
+    zoom: 13
+  });
+
+  const input = document.getElementById("pac-input");
+  const autocomplete = new google.maps.places.Autocomplete(input);
+  autocomplete.bindTo("bounds", map);
+
+  const infowindow = new google.maps.InfoWindow();
+  const marker = new google.maps.Marker({
+    map: map,
+    anchorPoint: new google.maps.Point(0, -29)
+  });
+
+  autocomplete.addListener("place_changed", () => {
+    infowindow.close();
+    marker.setVisible(false);
+    const place = autocomplete.getPlace();
+    if (!place.geometry || !place.geometry.location) {
+      alert("Không tìm thấy vị trí!");
+      return;
+    }
+    if (place.geometry.viewport) {
+      map.fitBounds(place.geometry.viewport);
+    } else {
+      map.setCenter(place.geometry.location);
+      map.setZoom(17);
+    }
+    marker.setPosition(place.geometry.location);
+    marker.setVisible(true);
+    infowindow.setContent(`<div><strong>${place.name}</strong><br>${place.formatted_address}</div>`);
+    infowindow.open(map, marker);
+  });
+}
+</script>
+
+<!-- Thay YOUR_API_KEY bằng key của bạn -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAwA22DfNHrWxK5CLs8SnQPzqkLcBwe2Kg&libraries=places&callback=initMap" async defer></script>
+</body>
+</html>
