@@ -1,362 +1,119 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <title>Đặt xe TrackAsia - Autocomplete & Tính giá</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- TrackAsia GL CSS -->
-  <link href="https://unpkg.com/trackasia-gl@latest/dist/trackasia-gl.css" rel="stylesheet" />
-  
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0; padding: 0;
-    }
-    #map {
-      width: 100%;
-      height: 350px;
-      margin-bottom: 10px;
-    }
-    #form-container {
-      padding: 0 15px 15px;
-      max-width: 600px;
-      margin: auto;
-    }
-    label {
-      display: block;
-      margin-bottom: 8px;
-    }
-    input[type=text], select, input[type=datetime-local] {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 15px;
-      box-sizing: border-box;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    #result {
-      margin-top: 15px;
-      font-size: 18px;
-      font-weight: bold;
-    }
-    .input-wrapper {
-      position: relative;
-    }
-    .autocomplete-suggestions {
-      position: absolute;
-      border: 1px solid #aaa;
-      background: white;
-      max-height: 200px;
-      overflow-y: auto;
-      width: 100%;
-      z-index: 1000;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      border-radius: 3px;
-      display: none; /* ẩn mặc định */
-    }
-    .autocomplete-suggestion {
-      padding: 8px 12px;
-      cursor: pointer;
-      font-size: 14px;
-      border-bottom: 1px solid #eee;
-    }
-    .autocomplete-suggestion:last-child {
-      border-bottom: none;
-    }
-    .autocomplete-suggestion:hover {
-      background: #f0f0f0;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gợi ý địa điểm TrackAsia</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #f4f4f4;
+  }
+  label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+  }
+  input {
+    width: 300px;
+    padding: 6px;
+    font-size: 14px;
+  }
+  .suggestions {
+    border: 1px solid #ddd;
+    max-width: 300px;
+    background: #fff;
+    position: absolute;
+    z-index: 1000;
+  }
+  .suggestion-item {
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  .suggestion-item:hover {
+    background-color: #0078d7;
+    color: white;
+  }
+  .relative {
+    position: relative;
+  }
+</style>
 </head>
 <body>
 
-<div id="map"></div>
-
-<div id="form-container">
-  <form id="booking-form" autocomplete="off">
-    <label>Điểm đi:
-      <div class="input-wrapper">
-        <input type="text" id="from" placeholder="Nhập điểm đi hoặc click lên bản đồ" required autocomplete="off" />
-        <div id="from-suggestions" class="autocomplete-suggestions"></div>
-      </div>
-    </label>
-
-    <label>Điểm đến:
-      <div class="input-wrapper">
-        <input type="text" id="to" placeholder="Nhập điểm đến hoặc click lên bản đồ" required autocomplete="off" />
-        <div id="to-suggestions" class="autocomplete-suggestions"></div>
-      </div>
-    </label>
-
-    <label>Loại chuyến:
-      <select id="trip-type">
-        <option value="oneway">Một chiều</option>
-        <option value="roundtrip">Hai chiều</option>
-      </select>
-    </label>
-
-    <label>Thời gian đặt:
-      <input type="datetime-local" id="datetime" required />
-    </label>
-
-    <button type="submit">Tính giá</button>
-  </form>
-
-  <div id="result"></div>
+<div class="relative">
+  <label for="origin">Điểm đi</label>
+  <input id="origin" type="text" autocomplete="off" placeholder="Nhập điểm đi" />
+  <div id="origin-suggestions" class="suggestions" style="display:none;"></div>
 </div>
 
-<!-- TrackAsia GL JS -->
-<script src="https://unpkg.com/trackasia-gl@latest/dist/trackasia-gl.js"></script>
+<div class="relative">
+  <label for="destination">Điểm đến</label>
+  <input id="destination" type="text" autocomplete="off" placeholder="Nhập điểm đến" />
+  <div id="destination-suggestions" class="suggestions" style="display:none;"></div>
+</div>
 
 <script>
-  const API_KEY = '0dfb3c4c83ebea6ae11754971709ddea53';
+const apiKey = '0dfb3c4c83ebea6ae11754971709ddea53';
 
-  // Khởi tạo bản đồ TrackAsia
-  const map = new trackasiagl.Map({
-    container: 'map',
-    style: `https://maps.track-asia.com/styles/v2/streets.json?key=${API_KEY}`,
-    center: { lat: 21.03, lng: 105.85 }, // Hà Nội
-    zoom: 12
-  });
-
-  let markerFrom = null;
-  let markerTo = null;
-  let selectingPoint = null; // 'from' hoặc 'to'
-
-  // Click lên bản đồ chọn điểm đi hoặc đến
-  map.on('click', async (e) => {
-    if (!selectingPoint) return;
-
-    const lngLat = e.lngLat;
-    const address = await reverseGeocode(lngLat.lng, lngLat.lat);
-
-    if (selectingPoint === 'from') {
-      setPoint('from', lngLat, address);
-    } else if (selectingPoint === 'to') {
-      setPoint('to', lngLat, address);
-    }
-  });
-
-  // Bật/tắt chế độ chọn điểm trên bản đồ khi focus/blur input
-  document.getElementById('from').addEventListener('focus', () => { selectingPoint = 'from'; });
-  document.getElementById('to').addEventListener('focus', () => { selectingPoint = 'to'; });
-  document.getElementById('from').addEventListener('blur', () => { setTimeout(() => { selectingPoint = null; }, 200); });
-  document.getElementById('to').addEventListener('blur', () => { setTimeout(() => { selectingPoint = null; }, 200); });
-
-  // Đặt điểm & marker trên bản đồ và cập nhật input
-  function setPoint(type, lngLat, address) {
-    const input = document.getElementById(type);
-    input.value = address;
-    input.dataset.lng = lngLat.lng;
-    input.dataset.lat = lngLat.lat;
-
-    if (type === 'from') {
-      if (markerFrom) markerFrom.setLngLat(lngLat);
-      else markerFrom = new trackasiagl.Marker({ color: 'green' }).setLngLat(lngLat).addTo(map);
-    } else if (type === 'to') {
-      if (markerTo) markerTo.setLngLat(lngLat);
-      else markerTo = new trackasiagl.Marker({ color: 'red' }).setLngLat(lngLat).addTo(map);
-    }
+function fetchSuggestions(query, callback) {
+  if (!query) {
+    callback([]);
+    return;
   }
-
-  // API geocoding (địa chỉ -> tọa độ)
-  async function geocode(address) {
-    const url = `https://api.track-asia.com/geocoding/v5/trackasia.places/${encodeURIComponent(address)}.json?access_token=${API_KEY}&limit=1`;
-    const res = await fetch(url);
-    const data = await res.json();
-    if (data.features && data.features.length > 0) {
-      const [lng, lat] = data.features[0].geometry.coordinates;
-      return { lng, lat, place_name: data.features[0].place_name };
-    } else {
-      throw new Error('Không tìm thấy địa chỉ: ' + address);
-    }
-  }
-
-  // API reverse geocoding (tọa độ -> địa chỉ)
-  async function reverseGeocode(lng, lat) {
-    const url = `https://api.track-asia.com/geocoding/v5/trackasia.places/${lng},${lat}.json?access_token=${API_KEY}&limit=1`;
-    const res = await fetch(url);
-    const data = await res.json();
-    if (data.features && data.features.length > 0) {
-      return data.features[0].place_name;
-    } else {
-      return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-    }
-  }
-
-  // API lấy quãng đường
-  async function getRouteDistance(fromCoords, toCoords) {
-    const url = `https://api.track-asia.com/directions/v5/trackasia/driving/${fromCoords.lng},${fromCoords.lat};${toCoords.lng},${toCoords.lat}?access_token=${API_KEY}&overview=false`;
-    const res = await fetch(url);
-    const data = await res.json();
-    if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) {
-      throw new Error('Không lấy được đường đi');
-    }
-    return data.routes[0].distance / 1000; // km
-  }
-
-  // Tính giá tiền
-  function calculatePrice(distanceKm, tripType, datetimeStr) {
-    let price = 0;
-    if (distanceKm <= 1) {
-      price = 10000;
-    } else {
-      price = 10000 + (distanceKm - 1) * 8000;
-    }
-    if (tripType === 'roundtrip') {
-      price *= 2;
-    }
-    const datetime = new Date(datetimeStr);
-    const hour = datetime.getHours();
-    if (hour >= 22 || hour < 5) {
-      price *= 1.2; // Phụ phí 20% ban đêm
-    }
-    return price;
-  }
-
-  // === AUTOCOMPLETE ===
-  function debounce(fn, delay) {
-    let timeout;
-    return function(...args) {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => fn.apply(this, args), delay);
-    };
-  }
-
-  async function fetchSuggestions(query) {
-    if (!query) return [];
-    try {
-      const url = `https://api.track-asia.com/geocoding/v5/trackasia.places/${encodeURIComponent(query)}.json?access_token=${API_KEY}&autocomplete=true&limit=7`;
-      const resp = await fetch(url);
-      if (!resp.ok) return [];
-      const data = await resp.json();
-      return data.features || [];
-    } catch {
-      return [];
-    }
-  }
-
-  function showSuggestions(input, container, suggestions) {
-    if (!suggestions.length) {
-      container.style.display = 'none';
-      container.innerHTML = '';
-      return;
-    }
-    container.innerHTML = suggestions.map(f =>
-      `<div class="autocomplete-suggestion" data-lng="${f.geometry.coordinates[0]}" data-lat="${f.geometry.coordinates[1]}">${f.place_name}</div>`
-    ).join('');
-    container.style.display = 'block';
-
-    container.querySelectorAll('.autocomplete-suggestion').forEach(item => {
-      item.onclick = () => {
-        const lng = parseFloat(item.getAttribute('data-lng'));
-        const lat = parseFloat(item.getAttribute('data-lat'));
-        input.value = item.textContent;
-        input.dataset.lng = lng;
-        input.dataset.lat = lat;
-        container.style.display = 'none';
-        input.focus();
-
-        // Cập nhật marker khi chọn gợi ý
-        if (input.id === 'from') {
-          setPoint('from', { lng, lat }, item.textContent);
-        } else if (input.id === 'to') {
-          setPoint('to', { lng, lat }, item.textContent);
-        }
-      };
+  const url = `https://maps.track-asia.com/places/v2/autocomplete?key=${apiKey}&text=${encodeURIComponent(query)}&boundary.country=VN&limit=5`;
+  fetch(url)
+    .then(res => {
+      if (!res.ok) throw new Error('Network response not ok');
+      return res.json();
+    })
+    .then(data => {
+      if (data && data.features) {
+        callback(data.features);
+      } else {
+        callback([]);
+      }
+    })
+    .catch(err => {
+      console.error('Lỗi gọi autocomplete:', err);
+      callback([]);
     });
-  }
+}
 
-  const fromInput = document.getElementById('from');
-  const fromSug = document.getElementById('from-suggestions');
-  const toInput = document.getElementById('to');
-  const toSug = document.getElementById('to-suggestions');
-
-  fromInput.addEventListener('input', debounce(async () => {
-    const val = fromInput.value.trim();
-    if (!val) {
-      fromSug.style.display = 'none';
-      fromSug.innerHTML = '';
-      return;
-    }
-    const sug = await fetchSuggestions(val);
-    showSuggestions(fromInput, fromSug, sug);
-  }, 250));
-
-  toInput.addEventListener('input', debounce(async () => {
-    const val = toInput.value.trim();
-    if (!val) {
-      toSug.style.display = 'none';
-      toSug.innerHTML = '';
-      return;
-    }
-    const sug = await fetchSuggestions(val);
-    showSuggestions(toInput, toSug, sug);
-  }, 250));
-
-  // Ẩn gợi ý khi click ra ngoài
+function setupAutocomplete(inputEl, suggestionEl) {
+  inputEl.addEventListener('input', () => {
+    const val = inputEl.value.trim();
+    fetchSuggestions(val, suggestions => {
+      suggestionEl.innerHTML = '';
+      if (suggestions.length === 0) {
+        suggestionEl.style.display = 'none';
+        return;
+      }
+      suggestions.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.textContent = s.place_name;
+        div.addEventListener('click', () => {
+          inputEl.value = s.place_name;
+          suggestionEl.style.display = 'none';
+          // Bạn có thể lưu tọa độ s.geometry.coordinates nếu cần
+          // Ví dụ: console.log('Đã chọn:', s.place_name, s.geometry.coordinates);
+        });
+        suggestionEl.appendChild(div);
+      });
+      suggestionEl.style.display = 'block';
+    });
+  });
   document.addEventListener('click', e => {
-    if (!fromInput.contains(e.target)) fromSug.style.display = 'none';
-    if (!toInput.contains(e.target)) toSug.style.display = 'none';
-  });
-
-  // Xử lý submit form
-  document.getElementById('booking-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const fromLng = parseFloat(fromInput.dataset.lng);
-    const fromLat = parseFloat(fromInput.dataset.lat);
-    const toLng = parseFloat(toInput.dataset.lng);
-    const toLat = parseFloat(toInput.dataset.lat);
-    const tripType = document.getElementById('trip-type').value;
-    const datetimeStr = document.getElementById('datetime').value;
-
-    if (isNaN(fromLng) || isNaN(fromLat)) {
-      alert('Vui lòng chọn điểm đi hợp lệ từ gợi ý hoặc bản đồ');
-      return;
-    }
-    if (isNaN(toLng) || isNaN(toLat)) {
-      alert('Vui lòng chọn điểm đến hợp lệ từ gợi ý hoặc bản đồ');
-      return;
-    }
-    if (!datetimeStr) {
-      alert('Vui lòng chọn thời gian đặt');
-      return;
-    }
-
-    try {
-      const fromCoords = { lng: fromLng, lat: fromLat };
-      const toCoords = { lng: toLng, lat: toLat };
-
-      // Hiển thị marker (nếu chưa có)
-      setPoint('from', fromCoords, fromInput.value);
-      setPoint('to', toCoords, toInput.value);
-
-      // Zoom bản đồ vừa đủ chứa 2 điểm
-      const bounds = new trackasiagl.LngLatBounds();
-      bounds.extend([fromCoords.lng, fromCoords.lat]);
-      bounds.extend([toCoords.lng, toCoords.lat]);
-      map.fitBounds(bounds, { padding: 60 });
-
-      // Lấy quãng đường
-      const distanceKm = await getRouteDistance(fromCoords, toCoords);
-
-      // Tính giá
-      const price = calculatePrice(distanceKm, tripType, datetimeStr);
-
-      // Hiển thị kết quả
-      document.getElementById('result').innerHTML = `
-        Quãng đường: <strong>${distanceKm.toFixed(2)} km</strong><br/>
-        Giá tiền: <strong>${price.toLocaleString('vi-VN')} VNĐ</strong>
-      `;
-    } catch (err) {
-      alert(err.message);
+    if (!inputEl.contains(e.target) && !suggestionEl.contains(e.target)) {
+      suggestionEl.style.display = 'none';
     }
   });
+}
+
+setupAutocomplete(document.getElementById('origin'), document.getElementById('origin-suggestions'));
+setupAutocomplete(document.getElementById('destination'), document.getElementById('destination-suggestions'));
 </script>
 
 </body>
