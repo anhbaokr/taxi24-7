@@ -2,15 +2,68 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Bản đồ TrackAsia - Hà Nội</title>
+  <title>Form đặt xe Track-Asia có Autocomplete</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
-  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <!-- Mapbox GL CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/mapbox-gl@2.15.0/dist/mapbox-gl.css"
+    rel="stylesheet"
+  />
 
   <style>
-    body, html, #map {
-      margin: 0; padding: 0; height: 100vh; width: 100vw;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+    }
+    #map {
+      width: 100%;
+      height: 350px;
+      margin-bottom: 10px;
+    }
+    #form-container {
+      padding: 0 15px 15px;
+      max-width: 600px;
+      margin: auto;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+    }
+    input[type=text], select, input[type=datetime-local] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .input-wrapper {
+      position: relative;
+    }
+    .autocomplete-suggestions {
+      position: absolute;
+      border: 1px solid #ccc;
+      background: white;
+      max-height: 150px;
+      overflow-y: auto;
+      width: 100%;
+      z-index: 10;
+    }
+    .autocomplete-suggestion {
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    .autocomplete-suggestion:hover {
+      background-color: #ddd;
     }
   </style>
 </head>
@@ -18,28 +71,250 @@
 
 <div id="map"></div>
 
-<script>
-  const API_KEY = "0dfb3c4c83ebea6ae11754971709ddea53";
+<div id="form-container">
+  <form id="booking-form" autocomplete="off">
+    <label>Điểm đi:
+      <div class="input-wrapper">
+        <input type="text" id="from" placeholder="Nhập điểm đi hoặc click lên bản đồ" required />
+        <div id="from-suggestions" class="autocomplete-suggestions" style="display:none"></div>
+      </div>
+    </label>
 
+    <label>Điểm đến:
+      <div class="input-wrapper">
+        <input type="text" id="to" placeholder="Nhập điểm đến hoặc click lên bản đồ" required />
+        <div id="to-suggestions" class="autocomplete-suggestions" style="display:none"></div>
+      </div>
+    </label>
+
+    <label>Loại chuyến:
+      <select id="trip-type">
+        <option value="oneway">Một chiều</option>
+        <option value="roundtrip">Hai chiều</option>
+      </select>
+    </label>
+
+    <label>Thời gian đặt:
+      <input type="datetime-local" id="datetime" required />
+    </label>
+
+    <button type="submit">Tính giá</button>
+  </form>
+
+  <div id="result"></div>
+</div>
+
+<!-- Mapbox GL JS -->
+<script src="https://cdn.jsdelivr.net/npm/mapbox-gl@2.15.0/dist/mapbox-gl.js"></script>
+
+<script>
+  const API_KEY = '0dfb3c4c83ebea6ae11754971709ddea53'; // Thay API key Track-Asia của bạn vào đây
   mapboxgl.accessToken = API_KEY;
+
   const map = new mapboxgl.Map({
     container: 'map',
     style: `https://maps.track-asia.com/styles/v1/trackasia/streets-v11/style.json?key=${API_KEY}`,
-    center: [105.854444, 21.029167],
+    center: [105.85, 21.03], // Hà Nội
     zoom: 12
   });
 
-  map.on('error', (e) => {
-    console.error('Map error:', e.error);
-    alert('Lỗi bản đồ: ' + e.error.message);
+  let markerFrom = null;
+  let markerTo = null;
+
+  let selectingPoint = null; // 'from' hoặc 'to'
+
+  // Click trên bản đồ để chọn điểm đi hoặc đến
+  map.on('click', async (e) => {
+    if (!selectingPoint) return;
+
+    const lngLat = e.lngLat;
+    const address = await reverseGeocode(lngLat.lng, lngLat.lat);
+
+    if (selectingPoint === 'from') {
+      document.getElementById('from').value = address;
+      if (markerFrom) markerFrom.setLngLat(lngLat);
+      else markerFrom = new mapboxgl.Marker({color:'green'}).setLngLat(lngLat).addTo(map);
+    } else if (selectingPoint === 'to') {
+      document.getElementById('to').value = address;
+      if (markerTo) markerTo.setLngLat(lngLat);
+      else markerTo = new mapboxgl.Marker({color:'red'}).setLngLat(lngLat).addTo(map);
+    }
   });
 
-  map.addControl(new mapboxgl.NavigationControl());
+  // Bật/tắt chọn điểm khi focus/blur input
+  document.getElementById('from').addEventListener('focus', () => { selectingPoint = 'from'; });
+  document.getElementById('to').addEventListener('focus', () => { selectingPoint = 'to'; });
+  document.getElementById('from').addEventListener('blur', () => { setTimeout(() => { selectingPoint = null; }, 200); });
+  document.getElementById('to').addEventListener('blur', () => { setTimeout(() => { selectingPoint = null; }, 200); });
 
-  new mapboxgl.Marker()
-    .setLngLat([105.854444, 21.029167])
-    .setPopup(new mapboxgl.Popup().setHTML("<h4>Hà Nội</h4><p>Thủ đô Việt Nam</p>"))
-    .addTo(map);
+  // Hàm gọi API geocoding (địa chỉ -> tọa độ)
+  async function geocode(address) {
+    const url = `https://api.track-asia.com/geocoding/v5/trackasia.places/${encodeURIComponent(address)}.json?access_token=${API_KEY}&limit=1`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.features && data.features.length > 0) {
+      return data.features[0].geometry.coordinates; // [lng, lat]
+    } else {
+      throw new Error('Không tìm thấy địa chỉ: ' + address);
+    }
+  }
+
+  // Hàm gọi API reverse geocoding (tọa độ -> địa chỉ)
+  async function reverseGeocode(lng, lat) {
+    const url = `https://api.track-asia.com/geocoding/v5/trackasia.places/${lng},${lat}.json?access_token=${API_KEY}&limit=1`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.features && data.features.length > 0) {
+      return data.features[0].place_name;
+    } else {
+      return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    }
+  }
+
+  // Hàm gọi API directions lấy quãng đường
+  async function getRouteDistance(fromCoords, toCoords) {
+    const url = `https://api.track-asia.com/directions/v5/trackasia/driving/${fromCoords[0]},${fromCoords[1]};${toCoords[0]},${toCoords[1]}?access_token=${API_KEY}&overview=false`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) {
+      throw new Error('Không lấy được đường đi');
+    }
+    return data.routes[0].distance / 1000; // km
+  }
+
+  // Tính giá tiền theo quy tắc
+  function calculatePrice(distanceKm, tripType, datetimeStr) {
+    let price = 0;
+    if (distanceKm <= 1) {
+      price = 10000;
+    } else {
+      price = 10000 + (distanceKm - 1) * 8000;
+    }
+    if (tripType === 'roundtrip') {
+      price *= 2;
+    }
+
+    const datetime = new Date(datetimeStr);
+    const hour = datetime.getHours();
+    if (hour >= 22 || hour < 5) {
+      price *= 1.2; // Phụ phí 20% ban đêm
+    }
+
+    return price;
+  }
+
+  // Hàm lấy gợi ý autocomplete
+  async function fetchSuggestions(query) {
+    if (!query) return [];
+    const url = `https://api.track-asia.com/geocoding/v5/trackasia.places/${encodeURIComponent(query)}.json?access_token=${API_KEY}&autocomplete=true&limit=5`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if(data.features) return data.features;
+    return [];
+  }
+
+  function showSuggestions(inputElem, suggestionElem, features) {
+    if (!features.length) {
+      suggestionElem.style.display = 'none';
+      suggestionElem.innerHTML = '';
+      return;
+    }
+    suggestionElem.innerHTML = features.map(f => 
+      `<div class="autocomplete-suggestion" data-place="${f.place_name}">${f.place_name}</div>`
+    ).join('');
+    suggestionElem.style.display = 'block';
+
+    // Chọn gợi ý
+    [...suggestionElem.children].forEach(child => {
+      child.onclick = () => {
+        inputElem.value = child.getAttribute('data-place');
+        suggestionElem.style.display = 'none';
+      };
+    });
+  }
+
+  // Gắn autocomplete cho input “from”
+  const fromInput = document.getElementById('from');
+  const fromSuggestions = document.getElementById('from-suggestions');
+  fromInput.addEventListener('input', async () => {
+    const q = fromInput.value.trim();
+    if (!q) {
+      fromSuggestions.style.display = 'none';
+      fromSuggestions.innerHTML = '';
+      return;
+    }
+    const features = await fetchSuggestions(q);
+    showSuggestions(fromInput, fromSuggestions, features);
+  });
+
+  // Gắn autocomplete cho input “to”
+  const toInput = document.getElementById('to');
+  const toSuggestions = document.getElementById('to-suggestions');
+  toInput.addEventListener('input', async () => {
+    const q = toInput.value.trim();
+    if (!q) {
+      toSuggestions.style.display = 'none';
+      toSuggestions.innerHTML = '';
+      return;
+    }
+    const features = await fetchSuggestions(q);
+    showSuggestions(toInput, toSuggestions, features);
+  });
+
+  // Ẩn dropdown khi click ngoài
+  document.addEventListener('click', (e) => {
+    if (!fromInput.contains(e.target)) fromSuggestions.style.display = 'none';
+    if (!toInput.contains(e.target)) toSuggestions.style.display = 'none';
+  });
+
+  // Xử lý submit form
+  document.getElementById('booking-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const fromAddr = fromInput.value.trim();
+    const toAddr = toInput.value.trim();
+    const tripType = document.getElementById('trip-type').value;
+    const datetimeStr = document.getElementById('datetime').value;
+
+    if (!fromAddr || !toAddr || !datetimeStr) {
+      alert('Vui lòng nhập đủ thông tin');
+      return;
+    }
+
+    try {
+      // Lấy tọa độ
+      const fromCoords = await geocode(fromAddr);
+      const toCoords = await geocode(toAddr);
+
+      // Hiển thị marker
+      if (markerFrom) markerFrom.setLngLat(fromCoords);
+      else markerFrom = new mapboxgl.Marker({color:'green'}).setLngLat(fromCoords).addTo(map);
+
+      if (markerTo) markerTo.setLngLat(toCoords);
+      else markerTo = new mapboxgl.Marker({color:'red'}).setLngLat(toCoords).addTo(map);
+
+      // Zoom vừa đủ chứa 2 điểm
+      const bounds = new mapboxgl.LngLatBounds();
+      bounds.extend(fromCoords);
+      bounds.extend(toCoords);
+      map.fitBounds(bounds, {padding: 60});
+
+      // Lấy quãng đường
+      const distanceKm = await getRouteDistance(fromCoords, toCoords);
+
+      // Tính giá
+      const price = calculatePrice(distanceKm, tripType, datetimeStr);
+
+      // Hiển thị kết quả
+      document.getElementById('result').innerHTML = `
+        Quãng đường: <strong>${distanceKm.toFixed(2)} km</strong><br/>
+        Giá tiền: <strong>${price.toLocaleString('vi-VN')} VNĐ</strong>
+      `;
+
+    } catch (err) {
+      alert(err.message);
+    }
+  });
 </script>
 
 </body>
