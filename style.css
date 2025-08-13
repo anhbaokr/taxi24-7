@@ -1,0 +1,307 @@
+/* ===================== Reset & body ===================== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f7f9fc;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* ===================== Header ===================== */
+h1 {
+  margin-bottom: 15px;
+  color: #0074D9;
+  font-weight: 700;
+  text-align: center;
+  font-size: 22px;
+}
+
+/* ===================== Form container ===================== */
+form {
+  background-color: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  width: 400px;
+  max-width: 100%;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ===================== Input row ===================== */
+.input-row {
+  display: flex;
+  gap: 10px;
+}
+
+/* ===================== Input group ===================== */
+.input-group {
+  position: relative;
+  width: 100%;
+}
+
+.input-group svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  fill: #0074D9;
+  pointer-events: none;
+}
+
+/* ===================== Input fields ===================== */
+input[type="text"],
+input[type="tel"],
+input[type="datetime-local"] {
+  width: 100%;
+  padding: 6px 10px 6px 34px; /* padding-left để nhường chỗ icon */
+  font-size: 14px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  height: 30px;
+  transition: border-color 0.3s ease;
+}
+
+input::placeholder {
+  color: #aaa;
+  font-style: italic;
+}
+
+input:focus {
+  border-color: #0074D9;
+  outline: none;
+  box-shadow: 0 0 6px #0074D9aa;
+}
+
+/* ===================== Select ===================== */
+select {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 2px solid #ccc;
+  height: 34px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+select:focus {
+  border-color: #0074D9;
+  outline: none;
+  box-shadow: 0 0 6px #0074D9aa;
+}
+
+/* ===================== Current location button ===================== */
+#btn-current-location {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #0074D9;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 7px;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.3s ease;
+  z-index: 1100;
+}
+
+#btn-current-location:hover { background-color: #005fa3; }
+#btn-current-location:active { background-color: #00407a; }
+
+/* ===================== Suggestions dropdown ===================== */
+.suggestions {
+  border: 1px solid #ccc;
+  max-width: 100%;
+  margin-top: 3px;
+  background: #fff;
+  position: absolute;
+  z-index: 1200;
+  border-radius: 6px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.suggestions div {
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.suggestions div:hover {
+  background-color: #e0f0ff;
+}
+
+/* ===================== Map ===================== */
+#map {
+  width: 400px;
+  max-width: 100%;
+  height: 420px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  position: relative;
+}
+
+/* ===================== Map style selector ===================== */
+#style-select {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.9);
+  border-radius: 8px;
+  padding: 5px 10px;
+  border: 2px solid #ccc;
+  font-size: 14px;
+  width: auto;
+  min-width: 150px;
+  z-index: 1000;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+#style-select:focus {
+  border-color: #0074D9;
+  outline: none;
+  box-shadow: 0 0 8px #0074D9aa;
+}
+
+/* ===================== Route info ===================== */
+#route-info {
+  width: 400px;
+  max-width: 100%;
+  background: #e6f0ff;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #004a99;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  min-height: 34px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+/* ===================== Buttons ===================== */
+.btn-reverse-vertical {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    width: 36px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;      /* căn icon giữa chiều dọc */
+    justify-content: center;
+    font-size: 24px;
+    user-select: none;
+    height: auto;             /* bỏ height cố định */
+    padding: 0;
+    align-self: stretch;       /* kéo dài bằng container 2 ô input */
+}
+
+
+.btn-reverse-vertical:hover { background-color: #1e7e34; }
+.btn-reverse-vertical:active { background-color: #155d27; }
+
+/* ===================== Checkbox row ===================== */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: default;
+  user-select: none;
+  color: #004a99;
+  font-weight: 600;
+  position: relative;
+}
+
+.checkbox-label svg {
+  width: 18px;
+  height: 18px;
+  fill: #0074D9;
+  flex-shrink: 0;
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+input#night-surcharge {
+  cursor: not-allowed;
+}
+
+#night-surcharge-status {
+  font-weight: 700;
+  margin-left: 6px;
+  font-size: 14px;
+  color: #d9534f; /* đỏ nếu không giờ đêm */
+  user-select: none;
+  display: none;
+}
+
+#night-surcharge:checked + #night-surcharge-status {
+  color: #28a745; /* xanh khi giờ đêm và checked */
+}
+
+/* ================= Input datetime-local với icon ================= */
+.input-datetime {
+  position: relative;
+  width: 100%;
+}
+
+.input-datetime svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  fill: #0074D9;
+  pointer-events: none;
+}
+
+.input-datetime input[type="datetime-local"] {
+  width: 100%;
+  padding: 6px 10px 6px 34px; /* padding-left để nhường chỗ icon */
+  font-size: 14px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  height: 30px;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.input-datetime input[type="datetime-local"]:focus {
+  border-color: #0074D9;
+  outline: none;
+  box-shadow: 0 0 6px #0074D9aa;
+}
