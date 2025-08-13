@@ -102,5 +102,12 @@
 <script src="script.js"></script>
 
 </script>
+  <script>
+     window.onload = () => {
+      const height = document.body.scrollHeight;
+      window.parent.postMessage({ type: 'resize-iframe', height }, '*');
+    };
+  </script>
 </body>
 </html>
+
