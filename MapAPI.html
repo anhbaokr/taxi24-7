@@ -1,615 +1,103 @@
-<!DOCTYPE html>  <html lang="vi">  
-<head>  
-<meta charset="UTF-8" />  
-<meta name="viewport" content="width=device-width, initial-scale=1" />  
-<title>Đặt Xe Nhanh - Tìm đường & Bản đồ</title>  
-<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />  
-<style>  
-  * {  
-    box-sizing: border-box;  
-  }  
-  body {  
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  
-    background: #f7f9fc;  
-    padding: 15px;  
-    display: flex;  
-    flex-direction: column;  
-    align-items: center;  
-    min-height: 100vh;  
-  }  
-  h1 {  
-    margin-bottom: 15px;  
-    color: #0074D9;  
-    font-weight: 700;  
-    text-align: center;  
-    font-size: 22px;  
-  }  
-  form {  
-    background: white;  
-    padding: 15px 20px;  
-    border-radius: 10px;  
-    box-shadow: 0 8px 20px rgb(0 0 0 / 0.1);  
-    width: 400px;  
-    max-width: 100%;  
-    margin-bottom: 10px;  
-    position: relative;  
-  }  
-  .form-body {  
-    display: flex;  
-    gap: 10px;  
-  }  
-  .btn-reverse-vertical {  
-    background-color: #28a745;  
-    color: white;  
-    border: none;  
-    border-radius: 6px;  
-    width: 36px;  
-    cursor: pointer;  
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);  
-    flex-shrink: 0;  
-    transition: background-color 0.3s ease;  
-    display: flex;  
-    align-items: flex-start;  
-    justify-content: center;  
-    font-size: 24px;  
-    user-select: none;  
-    height: 70px;  
-  }  
-  .btn-reverse-vertical:hover {  
-    background-color: #1e7e34;  
-  }  
-  .btn-reverse-vertical:active {  
-    background-color: #155d27;  
-  }  
-  .inputs-container {  
-    flex-grow: 1;  
-    display: flex;  
-    flex-direction: column;  
-    gap: 8px;  
-  }  
-  .input-group {  
-    position: relative;  
-    width: 100%;  
-  }  
-  .input-group svg {  
-    position: absolute;  
-    left: 10px;  
-    top: 50%;  
-    transform: translateY(-50%);  
-    width: 16px;  
-    height: 16px;  
-    fill: #0074D9;  
-    pointer-events: none;  
-  }  
-  input[type="text"] {  
-    width: 100%;  
-    padding: 6px 10px 6px 34px;  
-    font-size: 14px;  
-    border: 2px solid #ccc;  
-    border-radius: 6px;  
-    transition: border-color 0.3s ease;  
-    height: 30px;  
-    box-sizing: border-box;  
-  }  
-  input[type="text"]::placeholder {  
-    color: #aaa;  
-    font-style: italic;  
-  }  
-  input[type="text"]:focus {  
-    border-color: #0074D9;  
-    outline: none;  
-    box-shadow: 0 0 6px #0074D9aa;  
-  }  
-  #btn-current-location {  
-    position: absolute;  
-    right: 6px;  
-    top: 50%;  
-    transform: translateY(-50%);  
-    background-color: #0074D9;  
-    color: white;  
-    border: none;  
-    border-radius: 6px;  
-    padding: 3px 7px;  
-    font-size: 11px;  
-    cursor: pointer;  
-    white-space: nowrap;  
-    transition: background-color 0.3s ease;  
-    z-index: 1000;  
-  }  
-  #btn-current-location:hover {  
-    background-color: #005fa3;  
-  }  
-  #btn-current-location:active {  
-    background-color: #00407a;  
-  }  
-  .suggestions {  
-    border: 1px solid #ccc;  
-    max-width: 100%;  
-    margin-top: 3px;  
-    background: #fff;  
-    position: absolute;  
-    z-index: 100;  
-    border-radius: 6px;  
-    box-shadow: 0 3px 10px rgb(0 0 0 / 0.1);  
-    max-height: 150px;  
-    overflow-y: auto;  
-  }  
-  .suggestions div {  
-    padding: 8px 14px;  
-    cursor: pointer;  
-    transition: background-color 0.2s ease;  
-  }  
-  .suggestions div:hover {  
-    background-color: #e0f0ff;  
-  }  
-  #map {  
-    width: 400px;  
-    max-width: 100%;  
-    height: 420px;  
-    border-radius: 12px;  
-    box-shadow: 0 6px 18px rgb(0 0 0 / 0.12);  
-    position: relative;  
-  }  
-  #style-select {  
-    position: absolute;  
-    top: 8px;  
-    left: 50%;  
-    transform: translateX(-50%);  
-    background: rgba(255 255 255 / 0.9);  
-    border-radius: 8px;  
-    padding: 5px 10px;  
-    border: 2px solid #ccc;  
-    font-size: 14px;  
-    width: auto;  
-    min-width: 150px;  
-    z-index: 1000;  
-    cursor: pointer;  
-    transition: border-color 0.3s ease;  
-  }  
-  #style-select:focus {  
-    border-color: #0074D9;  
-    outline: none;  
-    box-shadow: 0 0 8px #0074D9aa;  
-  }  
-  #route-info {  
-    width: 400px;  
-    max-width: 100%;  
-    background: #e6f0ff;  
-    padding: 8px 14px;  
-    border-radius: 10px;  
-    font-size: 14px;  
-    color: #004a99;  
-    font-weight: 600;  
-    box-shadow: 0 2px 10px rgb(0 0 0 / 0.1);  
-    min-height: 34px;  
-    margin-bottom: 10px;  
-    box-sizing: border-box;  
-  }  
-  #btn-book-taxi {  
-    width: 400px;  
-    max-width: 100%;  
-    background-color: #0074D9;  
-    color: white;  
-    font-weight: 600;  
-    font-size: 16px;  
-    padding: 10px 0;  
-    border: none;  
-    border-radius: 10px;  
-    cursor: pointer;  
-    box-shadow: 0 4px 12px rgb(0 116 217 / 0.5);  
-    transition: background-color 0.3s ease;  
-    margin-bottom: 10px;  
-  }  
-  #btn-book-taxi:hover {  
-    background-color: #005fa3;  
-  }  
-  #btn-book-taxi:active {  
-    background-color: #00407a;  
-  }  
-  #booking-form {  
-    display: none;  
-    width: 400px;  
-    max-width: 100%;  
-    background: white;  
-    padding: 20px 20px;  
-    border-radius: 10px;  
-    box-shadow: 0 8px 20px rgb(0 0 0 / 0.1);  
-    margin-bottom: 10px;  
-  }  
-  #booking-form label {  
-    font-weight: 600;  
-    display: block;  
-    margin-bottom: 8px;  
-    color: #333;  
-  }  
-  #booking-form select {  
-    width: 100%;  
-    padding: 8px 12px;  
-    font-size: 14px;  
-    border-radius: 8px;  
-    border: 2px solid #ccc;  
-    margin-bottom: 15px;  
-    cursor: pointer;  
-    transition: border-color 0.3s ease;  
-  }  
-  #booking-form select:focus {  
-    border-color: #0074D9;  
-    outline: none;  
-    box-shadow: 0 0 8px #0074D9aa;  
-  }  
-  #booking-form button {  
-    background-color: #28a745;  
-    color: white;  
-    font-weight: 600;  
-    font-size: 16px;  
-    padding: 10px 0;  
-    border: none;  
-    border-radius: 10px;  
-    cursor: pointer;  
-    box-shadow: 0 4px 12px rgb(40 167 69 / 0.5);  
-    transition: background-color 0.3s ease;  
-    width: 100%;  
-  }  
-  #booking-form button:hover {  
-    background-color: #1e7e34;  
-  }  
-  #booking-form button:active {  
-    background-color: #155d27;  
-  }  
-</style>  
-</head>  
-<body>  <h1>Đặt Xe Nhanh - Tìm đường & Bản đồ</h1>  <div id="main-container">  
-  <form id="route-form" onsubmit="return false;">  
-    <div class="form-body">  
-      <button id="btn-reverse-vertical" class="btn-reverse-vertical" title="Đảo chiều">⇅</button>  
-      <div class="inputs-container">  
-        <div class="input-group" style="position:relative;">  
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>  
-          <input type="text" id="start" placeholder="Điểm đi..." autocomplete="off" />  
-          <button id="btn-current-location" type="button" title="Vị trí hiện tại">📍</button>  
-          <div id="start-suggestions" class="suggestions"></div>  
-        </div>  
-        <div class="input-group" style="position:relative;">  
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2L2 7v6c0 5 5 9 10 9s10-4 10-9V7l-10-5z"/></svg>  
-          <input type="text" id="end" placeholder="Điểm đến..." autocomplete="off" />  
-          <div id="end-suggestions" class="suggestions"></div>  
-        </div>  
-      </div>  
-    </div>  
-  </form>  <button id="btn-book-taxi">Đặt Xe</button>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Đặt Xe Nhanh - Tìm đường & Bản đồ</title>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<h1>Đặt Xe Nhanh - Taxi24h.Online</h1>
+<div id="main-container">
+  <form id="route-form" onsubmit="return false;">
+    <div class="form-body">
+      <div class="input-row">
+        <div class="input-group">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+          <input type="text" id="user-name" placeholder="Nhập tên" autocomplete="off" />
+        </div>
+        <div class="input-group">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.21c1.12.45 2.33.69 3.56.69a1 1 0 011 1v3.5a1 1 0 01-1 1C10.74 21.27 2.73 13.26 2.73 3a1 1 0 011-1h3.5a1 1 0 011 1c0 1.23.24 2.44.69 3.56a1 1 0 01-.21 1.11l-2.2 2.2z"/>
+          </svg>
+          <input type="tel" id="user-phone" placeholder="Số điện thoại" autocomplete="off" />
+        </div>
+      </div>
 
-  <div id="booking-form">  
-    <label for="car-type">Chọn loại xe:</label>  
-    <select id="car-type" name="car-type" aria-label="Chọn loại xe">  
-      <option value="5">Xe 5 chỗ</option>  
-      <option value="7">Xe 7 chỗ</option>  
-      <option value="16">Xe 16 chỗ</option>  
-      <option value="truck">Xe tải</option>  
-    </select>  
-    <button id="btn-back">Quay lại</button>  
-  </div>    <div id="route-info"></div>    <div id="map">  
-    <select id="style-select" aria-label="Chọn kiểu bản đồ">  
-      <option value="mapbox://styles/mapbox/streets-v11" selected>Đường phố</option>  
-      <option value="mapbox://styles/mapbox/outdoors-v11">Địa hình</option>  
-      <option value="mapbox://styles/mapbox/satellite-streets-v11">Vệ tinh</option>  
-      <option value="mapbox://styles/mapbox/light-v11">Sáng</option>  
-      <option value="mapbox://styles/mapbox/dark-v11">Tối</option>  
-    </select>  
-  </div>  
-</div>  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>  <script>  
-  const apiKey = "0dfb3c4c83ebea6ae11754971709ddea53";  
-  const bbox = "102,20,107.5,23.5";  
-  
-  mapboxgl.accessToken = 'pk.eyJ1IjoidGF4aTI0aC1vbmxpbmUiLCJhIjoiY21kcm5xeWk2MGw1NDJxb25zY3V4eHd4MCJ9.K4wVs6Xwelw6Ic6mXK1FPg';  
-  
-  let currentStyle = 'mapbox://styles/mapbox/streets-v11';  
-  
-  const map = new mapboxgl.Map({  
-    container: 'map',  
-    style: currentStyle,  
-    center: [105.854, 21.028],  
-    zoom: 12  
-  });  
-  
-  map.addControl(new mapboxgl.NavigationControl());  
-  
-  let startCoords = null;  
-  let endCoords = null;  
-  let startMarker = null;  
-  let endMarker = null;  
-  
-  const routeInfoDiv = document.getElementById('route-info');  
-  
-  function setupAutocomplete(inputId, suggestionsId, onSelect) {  
-    const input = document.getElementById(inputId);  
-    const suggestionsBox = document.getElementById(suggestionsId);  
-  
-    input.addEventListener("input", async () => {  
-      const text = input.value.trim();  
-      if (text.length < 2) {  
-        suggestionsBox.innerHTML = "";  
-        return;  
-      }  
-  
-      const url = `https://maps.track-asia.com/api/v1/autocomplete?lang=vi&size=5&text=${encodeURIComponent(text)}&key=${apiKey}&bbox=${bbox}`;  
-  
-      try {  
-        const res = await fetch(url);  
-        if (!res.ok) throw new Error("API lỗi");  
-        const data = await res.json();  
-  
-        suggestionsBox.innerHTML = "";  
-        if (data.features && data.features.length) {  
-          data.features.forEach(place => {  
-            const div = document.createElement("div");  
-            div.textContent = place.properties.label;  
-            div.onclick = () => {  
-              input.value = place.properties.label;  
-              suggestionsBox.innerHTML = "";  
-              onSelect(place.geometry.coordinates, place.properties.label);  
-            };  
-            suggestionsBox.appendChild(div);  
-          });  
-        }  
-      } catch (err) {  
-        console.error("Lỗi fetch:", err);  
-        suggestionsBox.innerHTML = "<div style='color:red'>Không thể lấy gợi ý</div>";  
-      }  
-    });  
-  
-    document.addEventListener("click", (e) => {  
-      if (!suggestionsBox.contains(e.target) && e.target !== input) {  
-        suggestionsBox.innerHTML = "";  
-      }  
-    });  
-  }  
-  
-  function selectStart(coords, label) {  
-    startCoords = coords;  
-    if (startMarker) startMarker.remove();  
-    startMarker = new mapboxgl.Marker({ color: 'green' }).setLngLat(coords).addTo(map);  
-    map.flyTo({ center: coords, zoom: 13 });  
-    updateRoute();  
-  }  
-  
-  function selectEnd(coords, label) {  
-    endCoords = coords;  
-    if (endMarker) endMarker.remove();  
-    endMarker = new mapboxgl.Marker({ color: 'red' }).setLngLat(coords).addTo(map);  
-    map.flyTo({ center: coords, zoom: 13 });  
-    updateRoute();  
-  }  
-  
-  function updateRoute() {  
-    if (!startCoords || !endCoords) {  
-      if (map.getSource('route')) {  
-        map.removeLayer('route');  
-        map.removeSource('route');  
-      }  
-      routeInfoDiv.innerHTML = "";  
-      return;  
-    }  
-  
-    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${startCoords.join(',')};${endCoords.join(',')}?geometries=geojson&overview=full&access_token=${mapboxgl.accessToken}`;  
-  
-    fetch(url)  
-      .then(res => res.json())  
-      .then(data => {  
-        if (!data.routes || data.routes.length === 0) {  
-          alert("Không tìm thấy tuyến đường phù hợp.");  
-          routeInfoDiv.innerHTML = "";  
-          return;  
-        }  
-  
-        const route = data.routes[0];  
-  
-        if (map.getSource('route')) {  
-          map.getSource('route').setData(route.geometry);  
-        } else {  
-          map.addSource('route', { type: 'geojson', data: route.geometry });  
-          map.addLayer({  
-            id: 'route',  
-            type: 'line',  
-            source: 'route',  
-            layout: { 'line-join': 'round', 'line-cap': 'round' },  
-            paint: { 'line-color': '#0074D9', 'line-width': 5 }  
-          });  
-        }  
-  
-        const bounds = new mapboxgl.LngLatBounds();  
-        bounds.extend(startCoords);  
-        bounds.extend(endCoords);  
-        map.fitBounds(bounds, { padding: 60 });  
-  
-        const distanceKm = (route.distance / 1000).toFixed(2);  
-  
-        let hasBot = false;  
-        if(route.legs && route.legs.length > 0){  
-          for(let leg of route.legs){  
-            if(leg.annotation && leg.annotation.toll && leg.annotation.toll.length > 0){  
-              hasBot = true;  
-              break;  
-            }  
-          }  
-        }  
-  
-        routeInfoDiv.innerHTML = `  
-          Khoảng cách: <strong>${distanceKm} km</strong><br/>  
-          Trạm thu phí BOT: <strong>${hasBot ? 'Có' : 'Không'}</strong>  
-        `;  
-      })  
-      .catch(() => {  
-        alert("Không thể tính toán tuyến đường.");  
-        routeInfoDiv.innerHTML = "";  
-      });  
-  }  
-  
-  const styleSelect = document.getElementById('style-select');  
-  styleSelect.addEventListener('change', (e) => {  
-    currentStyle = e.target.value;  
-    map.setStyle(currentStyle);  
-    map.once('styledata', () => {  
-      if (startCoords && endCoords) updateRoute();  
-      if (startMarker) startMarker.remove();  
-      if (endMarker) endMarker.remove();  
-      if (startCoords) {  
-        startMarker = new mapboxgl.Marker({ color: 'green' }).setLngLat(startCoords).addTo(map);  
-      }  
-      if (endCoords) {  
-        endMarker = new mapboxgl.Marker({ color: 'red' }).setLngLat(endCoords).addTo(map);  
-      }  
-    });  
-  });  
-  
-  document.getElementById('btn-current-location').addEventListener('click', () => {  
-    if (!navigator.geolocation) {  
-      alert("Trình duyệt của bạn không hỗ trợ định vị GPS.");  
-      return;  
-    }  
-    navigator.geolocation.getCurrentPosition(position => {  
-      const coords = [position.coords.longitude, position.coords.latitude];  
-      document.getElementById('start').value = `Vị trí hiện tại (${coords[1].toFixed(5)}, ${coords[0].toFixed(5)})`;  
-      selectStart(coords, 'Vị trí hiện tại');  
-    }, () => {  
-      alert("Không thể lấy vị trí hiện tại. Vui lòng kiểm tra quyền truy cập định vị.");  
-    });  
-  });  
-  
-  document.getElementById('btn-reverse-vertical').addEventListener('click', () => {  
-    const startInput = document.getElementById('start');  
-    const endInput = document.getElementById('end');  
-  
-    const tempCoords = startCoords;  
-    startCoords = endCoords;  
-    endCoords = tempCoords;  
-  
-    const tempVal = startInput.value;  
-    startInput.value = endInput.value;  
-    endInput.value = tempVal;  
-  
-    if (startMarker) startMarker.remove();  
-    if (endMarker) endMarker.remove();  
-    if (startCoords) {  
-      startMarker = new mapboxgl.Marker({ color: 'green' }).setLngLat(startCoords).addTo(map);  
-    }  
-    if (endCoords) {  
-      endMarker = new mapboxgl.Marker({ color: 'red' }).setLngLat(endCoords).addTo(map);  
-    }  
-  
-    updateRoute();  
-  });  
-  
-  function setupAutocomplete(inputId, suggestionsId, onSelect) {  
-    const input = document.getElementById(inputId);  
-    const suggestionsBox = document.getElementById(suggestionsId);  
-  
-    input.addEventListener("input", async () => {  
-      const text = input.value.trim();  
-      if (text.length < 2) {  
-        suggestionsBox.innerHTML = "";  
-        return;  
-      }  
-  
-      const url = `https://maps.track-asia.com/api/v1/autocomplete?lang=vi&size=5&text=${encodeURIComponent(text)}&key=${apiKey}&bbox=${bbox}`;  
-  
-      try {  
-        const res = await fetch(url);  
-        if (!res.ok) throw new Error("API lỗi");  
-        const data = await res.json();  
-  
-        suggestionsBox.innerHTML = "";  
-        if (data.features && data.features.length) {  
-          data.features.forEach(place => {  
-            const div = document.createElement("div");  
-            div.textContent = place.properties.label;  
-            div.onclick = () => {  
-              input.value = place.properties.label;  
-              suggestionsBox.innerHTML = "";  
-              onSelect(place.geometry.coordinates, place.properties.label);  
-            };  
-            suggestionsBox.appendChild(div);  
-          });  
-        }  
-      } catch (err) {  
-        console.error("Lỗi fetch:", err);  
-        suggestionsBox.innerHTML = "<div style='color:red'>Không thể lấy gợi ý</div>";  
-      }  
-    });  
-  
-    document.addEventListener("click", (e) => {  
-      if (!suggestionsBox.contains(e.target) && e.target !== input) {  
-        suggestionsBox.innerHTML = "";  
-      }  
-    });  
-  }  
-  
-  setupAutocomplete("start", "start-suggestions", selectStart);  
-  setupAutocomplete("end", "end-suggestions", selectEnd);  
-  
-  map.on('click', (e) => {  
-    const coords = [e.lngLat.lng, e.lngLat.lat];  
-  
-    const popupNode = document.createElement('div');  
-    popupNode.style.display = 'flex';  
-    popupNode.style.flexDirection = 'column';  
-    popupNode.style.gap = '6px';  
-  
-    const btnStart = document.createElement('button');  
-    btnStart.textContent = 'Đặt làm điểm đi';  
-    btnStart.style.padding = '6px 10px';  
-    btnStart.style.cursor = 'pointer';  
-    btnStart.style.border = 'none';  
-    btnStart.style.borderRadius = '6px';  
-    btnStart.style.backgroundColor = '#28a745';  
-    btnStart.style.color = 'white';  
-    btnStart.addEventListener('click', () => {  
-      document.getElementById('start').value = `Tọa độ (${coords[1].toFixed(5)}, ${coords[0].toFixed(5)})`;  
-      selectStart(coords, 'Tọa độ');  
-      popup.remove();  
-    });  
-  
-    const btnEnd = document.createElement('button');  
-    btnEnd.textContent = 'Đặt làm điểm đến';  
-    btnEnd.style.padding = '6px 10px';  
-    btnEnd.style.cursor = 'pointer';  
-    btnEnd.style.border = 'none';  
-    btnEnd.style.borderRadius = '6px';  
-    btnEnd.style.backgroundColor = '#dc3545';  
-    btnEnd.style.color = 'white';  
-    btnEnd.addEventListener('click', () => {  
-      document.getElementById('end').value = `Tọa độ (${coords[1].toFixed(5)}, ${coords[0].toFixed(5)})`;  
-      selectEnd(coords, 'Tọa độ');  
-      popup.remove();  
-    });  
-  
-    popupNode.appendChild(btnStart);  
-    popupNode.appendChild(btnEnd);  
-  
-    const popup = new mapboxgl.Popup()  
-      .setLngLat(coords)  
-      .setDOMContent(popupNode)  
-      .addTo(map);  
-  });  
-  
-  const btnBookTaxi = document.getElementById('btn-book-taxi');  
-  const mainContainer = document.getElementById('main-container');  
-  const bookingForm = document.getElementById('booking-form');  
-  const btnBack = document.getElementById('btn-back');  
-  
-  btnBookTaxi.addEventListener('click', () => {  
-    // Ẩn form nhập điểm và nút Đặt Xe  
-    document.getElementById('route-form').style.display = 'none';  
-    btnBookTaxi.style.display = 'none';  
-    // Hiện form đặt xe  
-    bookingForm.style.display = 'block';  
-  });  
-  
-  btnBack.addEventListener('click', () => {  
-    // Hiện form nhập điểm và nút Đặt Xe  
-    document.getElementById('route-form').style.display = 'flex';  
-    btnBookTaxi.style.display = 'block';  
-    // Ẩn form đặt xe  
-    bookingForm.style.display = 'none';  
-  });  
-</script>  </body>  
-  </html>
+      <select id="vehicle-type">
+        <option value="" disabled selected>Chọn loại xe</option>
+        <option value="5-chỗ">5 chỗ</option>
+        <option value="7-chỗ">7 chỗ</option>
+        <option value="16-chỗ">16 chỗ</option>
+        <option value="xe-tai">Xe tải</option>
+      </select>
+
+      <div class="input-datetime">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M7 10h5v5H7zm6-7h2v2h-2zm4 0h2v2h-2zm-9 0h2v2H8zm11 4v14H4V7h16zm0-2H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/>
+  </svg>
+  <input type="datetime-local" id="datetime" />
+</div>
+
+
+      <div class="input-row" style="margin-top:10px;">
+        <button id="btn-reverse-vertical" class="btn-reverse-vertical" title="Đảo chiều">⇅</button>
+        <div class="inputs-container">
+          <div class="input-group">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+            <input type="text" id="start" placeholder="Điểm đi..." autocomplete="off" />
+            <button id="btn-current-location" type="button" title="Vị trí hiện tại">📍</button>
+            <div id="start-suggestions" class="suggestions"></div>
+          </div>
+          <div class="input-group">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M12 2L2 7v6c0 5 5 9 10 9s10-4 10-9V7l-10-5z"/>
+            </svg>
+            <input type="text" id="end" placeholder="Điểm đến..." autocomplete="off" />
+            <div id="end-suggestions" class="suggestions"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkbox-row">
+        <label for="round-trip" class="checkbox-label">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M17 1l4 4-4 4V6H3V4h14V1zm-2 6v4a6 6 0 0 1-6 6H7l4 4-4 4h2a8 8 0 0 0 8-8V7h-2z"/>
+          </svg>
+          2 chiều
+          <input type="checkbox" id="round-trip" />
+        </label>
+        <label for="night-surcharge" class="checkbox-label">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M9.37 5.51A7 7 0 0 0 12 19a7 7 0 0 0 7-7 7 7 0 0 0-9.63-6.48z"/>
+          </svg>
+          <span id="night-surcharge-label-text">Phụ phí ban đêm</span>
+          <input type="checkbox" id="night-surcharge" disabled />
+          <span id="night-surcharge-status">CÓ</span>
+        </label>
+      </div>
+    </div>
+  </form>
+
+  <div id="route-info"></div>
+
+  <div id="map">
+    <select id="style-select">
+      <option value="mapbox://styles/mapbox/streets-v11" selected>Đường phố</option>
+      <option value="mapbox://styles/mapbox/outdoors-v11">Địa hình</option>
+      <option value="mapbox://styles/mapbox/satellite-streets-v11">Vệ tinh</option>
+      <option value="mapbox://styles/mapbox/light-v11">Sáng</option>
+      <option value="mapbox://styles/mapbox/dark-v11">Tối</option>
+    </select>
+  </div>
+</div>
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
