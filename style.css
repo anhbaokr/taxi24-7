@@ -305,3 +305,14 @@ input#night-surcharge {
   outline: none;
   box-shadow: 0 0 6px #0074D9aa;
 }
+/* ================= căn chỉnh trên mobile ================= */
+@media screen and (max-width: 480px) {
+    input, select, button {
+        font-size: 14px;
+        padding: 6px;
+    }
+    h1, h2, h3 {
+        font-size: 18px;
+    }
+}
+
