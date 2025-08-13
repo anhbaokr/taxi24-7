@@ -10,7 +10,7 @@
 <body>
 <h1>Đặt Xe Nhanh - Taxi24h.Online</h1>
 <div id="main-container">
-  <form id="route-form" onsubmit="return false;">
+  <form id="route-form">
     <div class="form-body">
       <div class="input-row">
         <div class="input-group">
@@ -36,15 +36,29 @@
       </select>
 
       <div class="input-datetime">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-    <path d="M7 10h5v5H7zm6-7h2v2h-2zm4 0h2v2h-2zm-9 0h2v2H8zm11 4v14H4V7h16zm0-2H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/>
-  </svg>
-  <input type="datetime-local" id="datetime" />
-</div>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M7 10h5v5H7zm6-7h2v2h-2zm4 0h2v2h-2zm-9 0h2v2H8zm11 4v14H4V7h16zm0-2H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/>
+        </svg>
+        <input type="text" id="datetime" />
+		<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<!-- Khởi tạo -->
+<script>
+flatpickr("#datetime", {
+    enableTime: true,
+    dateFormat: "d/m/Y H:i",
+    time_24hr: true
+});
+</script>
+
+      </div>
 
       <div class="input-row" style="margin-top:10px;">
-        <button id="btn-reverse-vertical" class="btn-reverse-vertical" title="Đảo chiều">⇅</button>
+        <button id="btn-reverse-vertical" class="btn-reverse-vertical" title="Đảo chiều" type="button">⇅</button>
         <div class="inputs-container">
           <div class="input-group">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -81,6 +95,8 @@
           <span id="night-surcharge-status">CÓ</span>
         </label>
       </div>
+
+      <button type="submit" style="margin-top:10px; padding:10px 20px; font-weight:600; cursor:pointer;">Đặt xe</button>
     </div>
   </form>
 
@@ -99,5 +115,7 @@
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 <script src="script.js"></script>
+
+</script>
 </body>
 </html>
