@@ -1,309 +1,106 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Đặt Xe Nhanh</title>
-
-  <!-- Mapbox -->
-  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
-  <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" rel="stylesheet" />
-
-  <!-- Flatpickr -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
-
-  <style>
-    :root {
-      --bg-color: #121212;
-      --form-bg: #2b3a46;
-      --input-bg: #384d5a;
-      --input-focus-bg: #415768;
-      --checkbox-bg: #394b5b;
-      --text-color: #f0f0f0;
-      --primary-color: #00aaff;
-      --primary-hover: #008ecb;
-      --outline-color: #00d4ab;
-      --border-color: #5a6e7f;
-    }
-
-    body {
-      margin: 0;
-      padding: 20px;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      display: flex;
-      justify-content: center;
-    }
-
-    form {
-      background-color: var(--form-bg);
-      border-radius: 10px;
-      padding: 15px;
-      max-width: 400px;
-      width: 100%;
-      box-shadow: 0 0 8px rgba(0,0,0,0.5);
-      font-size: 14px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    form:hover {
-      transform: scale(1.02);
-      box-shadow: 0 0 16px rgba(0, 170, 255, 0.7);
-    }
-
-    input, select, button {
-      width: 100%;
-      padding: 7px 10px;
-      margin-bottom: 10px;
-      border-radius: 6px;
-      border: 1px solid var(--border-color);
-      background-color: var(--input-bg);
-      color: var(--text-color);
-      font-size: 13px;
-    }
-
-    input:focus, select:focus {
-      outline: 2px solid var(--outline-color);
-      background-color: var(--input-focus-bg);
-    }
-
-    .checkbox-group {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .checkbox-group label {
-      flex: 1;
-      background-color: var(--checkbox-bg);
-      padding: 6px;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      border: 1px solid #555;
-    }
-
-    #map {
-      height: 150px;
-      border-radius: 10px;
-      margin-top: 10px;
-    }
-
-    #info {
-      text-align: center;
-      font-size: 13px;
-      margin: 8px 0;
-      display: none;
-    }
-
-    input#datetime::-webkit-calendar-picker-indicator {
-      display: none;
-    }
-
-    @media (max-width: 480px) {
-      form { font-size: 13px; }
-      input, select, button { font-size: 12px; }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đặt Xe Nhanh - Tìm đường & Bản đồ</title>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <form onsubmit="submitBooking(event)">
-    <h2>🚖 Đặt Xe</h2>
-    <input type="text" id="name" placeholder="Họ và tên" required />
-    <input type="tel" id="phone" placeholder="Số điện thoại (10 số)" required />
-    <div id="geocoder-origin"></div>
-    <div style="height:5px;"></div>
-    <div id="geocoder-destination"></div>
-    <button type="button" onclick="swapLocations()">🔁 Đổi chiều</button>
-    <select id="carType" name="car">
-      <option value="4">🚗 Xe 4 chỗ</option>
-      <option value="7">🚙 Xe 7 chỗ</option>
-      <option value="16">🚌 Xe 16 chỗ</option>
-      <option value="truck">🚚 Xe tải</option>
-    </select>
-    <input id="datetime" placeholder="Chọn ngày giờ đi" required />
-    <div class="checkbox-group">
-      <label><input type="checkbox" id="twoWay" /> ↔️ 2 chiều</label>
-      <label><input type="checkbox" id="night" /> 🌙 Ban đêm</label>
+<h1>Đặt Xe Nhanh - Taxi24h.Online</h1>
+<div id="main-container">
+  <form id="route-form">
+    <div class="form-body">
+      <div class="input-row">
+        <div class="input-group">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+          <input type="text" id="user-name" placeholder="Nhập tên" autocomplete="off" />
+        </div>
+        <div class="input-group">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.21c1.12.45 2.33.69 3.56.69a1 1 0 011 1v3.5a1 1 0 01-1 1C10.74 21.27 2.73 13.26 2.73 3a1 1 0 011-1h3.5a1 1 0 011 1c0 1.23.24 2.44.69 3.56a1 1 0 01-.21 1.11l-2.2 2.2z"/>
+          </svg>
+          <input type="tel" id="user-phone" placeholder="Số điện thoại" autocomplete="off" />
+        </div>
+      </div>
 
+      <select id="vehicle-type">
+        <option value="" disabled selected>Chọn loại xe</option>
+        <option value="5-chỗ">5 chỗ</option>
+        <option value="7-chỗ">7 chỗ</option>
+        <option value="16-chỗ">16 chỗ</option>
+        <option value="xe-tai">Xe tải</option>
+      </select>
+
+      <div class="input-datetime">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M7 10h5v5H7zm6-7h2v2h-2zm4 0h2v2h-2zm-9 0h2v2H8zm11 4v14H4V7h16zm0-2H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/>
+        </svg>
+        <input type="datetime-local" id="datetime" />
+      </div>
+
+      <div class="input-row" style="margin-top:10px;">
+        <button id="btn-reverse-vertical" class="btn-reverse-vertical" title="Đảo chiều" type="button">⇅</button>
+        <div class="inputs-container">
+          <div class="input-group">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+            <input type="text" id="start" placeholder="Điểm đi..." autocomplete="off" />
+            <button id="btn-current-location" type="button" title="Vị trí hiện tại">📍</button>
+            <div id="start-suggestions" class="suggestions"></div>
+          </div>
+          <div class="input-group">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M12 2L2 7v6c0 5 5 9 10 9s10-4 10-9V7l-10-5z"/>
+            </svg>
+            <input type="text" id="end" placeholder="Điểm đến..." autocomplete="off" />
+            <div id="end-suggestions" class="suggestions"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkbox-row">
+        <label for="round-trip" class="checkbox-label">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M17 1l4 4-4 4V6H3V4h14V1zm-2 6v4a6 6 0 0 1-6 6H7l4 4-4 4h2a8 8 0 0 0 8-8V7h-2z"/>
+          </svg>
+          2 chiều
+          <input type="checkbox" id="round-trip" />
+        </label>
+        <label for="night-surcharge" class="checkbox-label">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M9.37 5.51A7 7 0 0 0 12 19a7 7 0 0 0 7-7 7 7 0 0 0-9.63-6.48z"/>
+          </svg>
+          <span id="night-surcharge-label-text">Phụ phí ban đêm</span>
+          <input type="checkbox" id="night-surcharge" disabled />
+          <span id="night-surcharge-status">CÓ</span>
+        </label>
+      </div>
+
+      <button type="submit" style="margin-top:10px; padding:10px 20px; font-weight:600; cursor:pointer;">Đặt xe</button>
     </div>
-    <div id="info">
-      <p id="distance"></p>
-      <p id="price"></p>
-    </div>
-    <button type="submit" id="submitBtn">📩 Đặt xe</button>
-    <div id="map"></div>
   </form>
 
-  <!-- Mapbox & JS -->
-  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-  <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
-  <script>
-    flatpickr("#datetime", {
-      enableTime: true,
-      time_24hr: true,
-      dateFormat: "d/m/Y H:i",
-      locale: "vn",
-      minDate: "today"
-    });
+  <div id="route-info"></div>
 
-    mapboxgl.accessToken = 'pk.eyJ1IjoidGF4aTI0aC1vbmxpbmUiLCJhIjoiY21kcm5xeWk2MGw1NDJxb25zY3V4eHd4MCJ9.K4wVs6Xwelw6Ic6mXK1FPg'; // ← Thay bằng token thực tế
-    const map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/dark-v10',
-      center: [105.854, 21.028],
-      zoom: 12
-    });
+  <div id="map">
+    <select id="style-select">
+      <option value="mapbox://styles/mapbox/streets-v11" selected>Đường phố</option>
+      <option value="mapbox://styles/mapbox/outdoors-v11">Địa hình</option>
+      <option value="mapbox://styles/mapbox/satellite-streets-v11">Vệ tinh</option>
+      <option value="mapbox://styles/mapbox/light-v11">Sáng</option>
+      <option value="mapbox://styles/mapbox/dark-v11">Tối</option>
+    </select>
+  </div>
+</div>
 
-    const geocoderOrigin = new MapboxGeocoder({ accessToken: mapboxgl.accessToken, placeholder: '📍 Điểm đi', mapboxgl, marker: false, countries: 'vn' });
-    const geocoderDestination = new MapboxGeocoder({ accessToken: mapboxgl.accessToken, placeholder: '📍 Điểm đến', mapboxgl, marker: false, countries: 'vn' });
-    document.getElementById('geocoder-origin').appendChild(geocoderOrigin.onAdd(map));
-    document.getElementById('geocoder-destination').appendChild(geocoderDestination.onAdd(map));
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<script src="script.js"></script>
 
-    let originCoords = null, destinationCoords = null;
-    let originName = '', destinationName = '';
-    let originMarker = null, destinationMarker = null;
-
-    geocoderOrigin.on('result', e => {
-      originCoords = e.result.geometry.coordinates;
-      originName = e.result.place_name;
-      updateRoute();
-    });
-
-    geocoderDestination.on('result', e => {
-      destinationCoords = e.result.geometry.coordinates;
-      destinationName = e.result.place_name;
-      updateRoute();
-    });
-
-    function swapLocations() {
-      [originCoords, destinationCoords] = [destinationCoords, originCoords];
-      [originName, destinationName] = [destinationName, originName];
-      geocoderOrigin.query(originName);
-      geocoderDestination.query(destinationName);
-    }
-
-    function updateRoute() {
-      if (!originCoords || !destinationCoords) {
-        document.getElementById('info').style.display = 'none';
-        return;
-      }
-
-      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${originCoords.join(',')};${destinationCoords.join(',')}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          if (!data.routes || data.routes.length === 0) {
-            alert("Không tìm thấy tuyến đường phù hợp.");
-            return;
-          }
-
-          const route = data.routes[0];
-          const km = route.distance / 1000;
-          const price = calculatePrice(km);
-
-          document.getElementById('info').style.display = 'block';
-          document.getElementById('distance').innerText = `📏 ${km.toFixed(2)} km`;
-          document.getElementById('price').innerText = `💰 ${price.toLocaleString()} VND`;
-
-          if (map.getSource('route')) {
-            map.getSource('route').setData(route.geometry);
-          } else {
-            map.addSource('route', { type: 'geojson', data: route.geometry });
-            map.addLayer({ id: 'route', type: 'line', source: 'route', paint: { 'line-color': '#00ff99', 'line-width': 4 } });
-          }
-
-          if (originMarker) originMarker.remove();
-          if (destinationMarker) destinationMarker.remove();
-
-          originMarker = new mapboxgl.Marker({ color: '#00ff00' }).setLngLat(originCoords).addTo(map);
-          destinationMarker = new mapboxgl.Marker({ color: '#ff0033' }).setLngLat(destinationCoords).addTo(map);
-
-          map.fitBounds([originCoords, destinationCoords], { padding: 40 });
-        })
-        .catch(() => alert("Không thể tính toán tuyến đường."));
-    }
-
-    document.getElementById('carType').addEventListener('change', updateRoute);
-    document.getElementById('night').addEventListener('change', updateRoute);
-    document.getElementById('twoWay').addEventListener('change', updateRoute);
-
-    function calculatePrice(km) {
-      const car = document.getElementById('carType').value;
-      const isNight = document.getElementById('night').checked;
-      const isTwoWay = document.getElementById('twoWay').checked;
-      const pricing = {
-        4:    { open: 10000, firstKm: 15000, nextKm: 11000 },
-        7:    { open: 12000, firstKm: 17000, nextKm: 13000 },
-        16:   { open: 15000, firstKm: 20000, nextKm: 15000 },
-        truck:{ open: 20000, firstKm: 25000, nextKm: 18000 }
-      };
-      const p = pricing[car];
-      let base = km <= 1 ? p.open + p.firstKm : p.open + p.firstKm + (km - 1) * p.nextKm;
-      if (isNight) base *= 1.2;
-      if (isTwoWay) base *= 2;
-      return Math.round(base);
-    }
-
-    function submitBooking(event) {
-      event.preventDefault();
-      const name = document.getElementById('name').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const datetime = document.getElementById('datetime').value.trim();
-
-      if (!datetime) return alert("Vui lòng chọn ngày giờ đi!");
-      if (!/^0\d{9}$/.test(phone)) return alert("Số điện thoại không hợp lệ!");
-      if (!originCoords || !destinationCoords) return alert("Vui lòng chọn điểm đi và đến!");
-
-      const btn = document.getElementById("submitBtn");
-      btn.disabled = true;
-      btn.textContent = "🚗 Đang gửi...";
-
-      const data = {
-        name,
-        phone,
-        origin: originName,
-        destination: destinationName,
-        vehicle: document.getElementById('carType').value,
-        datetime,
-        night: document.getElementById('night').checked ? 'Có' : 'Không',
-        twoWay: document.getElementById('twoWay').checked ? 'Có' : 'Không',
-        distance: document.getElementById('distance').innerText,
-        price: document.getElementById('price').innerText
-      };
-
-      fetch("https://script.google.com/macros/s/AKfycby8sReEGboDctXhL-eQKeTiPKpj39JgDXMrpMWap1TJMaD8btWgWLCWrbZsbEwcAWAnNQ/exec", {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(data)
-      })
-      .then(() => {
-        btn.textContent = "✅ Đặt thành công!";
-        setTimeout(() => window.location.reload(), 2000);
-      })
-      .catch(() => {
-        alert("Gửi không thành công. Vui lòng thử lại!");
-        btn.disabled = false;
-        btn.textContent = "📩 Đặt xe";
-      });
-    }
-
-    window.onload = () => {
-      const height = document.body.scrollHeight;
-      window.parent.postMessage({ type: 'resize-iframe', height }, '*');
-    };
-  </script>
+</script>
 </body>
 </html>
-
-
-
-
-
-
