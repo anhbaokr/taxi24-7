@@ -88,18 +88,6 @@ function updateNightSurcharge(){
     nightStatus.style.color = "red";
   }
 }
-// Nạp thư viện Flatpickr
-const flatpickrScript = document.createElement("script");
-flatpickrScript.src = "https://cdn.jsdelivr.net/npm/flatpickr";
-flatpickrScript.onload = () => {
-    flatpickr("#datetime", {
-        enableTime: true,
-        dateFormat: "d/m/Y H:i",
-        time_24hr: true
-    });
-};
-document.head.appendChild(flatpickrScript);
-
 
 // ==================== Update Route & Price ====================
 function updateRoute(){
