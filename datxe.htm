@@ -4,7 +4,14 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Đặt Xe Nhanh - Tìm đường & Bản đồ</title>
-<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+
+<!-- TrackAsia GL CSS -->
+<link rel="stylesheet" href="https://unpkg.com/trackasia-gl@2.0.1/dist/trackasia-gl.css" />
+
+<!-- TrackAsia Directions CSS -->
+<link rel="stylesheet" href="https://unpkg.com/trackasia-gl-directions/dist/trackasia-gl-directions.css" />
+
+<!-- CSS riêng của bạn -->
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -50,7 +57,7 @@
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
             </svg>
             <input type="text" id="start" placeholder="Điểm đi..." autocomplete="off" />
-            <button id="btn-current-location" type="button" title="Vị trí hiện tại">📍</button>
+            <button id="btn-current-location" type="button" title="Vị trí hiện tại"></button>
             <div id="start-suggestions" class="suggestions"></div>
           </div>
           <div class="input-group">
@@ -89,25 +96,28 @@
 
   <div id="map">
     <select id="style-select">
-      <option value="mapbox://styles/mapbox/streets-v11" selected>Đường phố</option>
-      <option value="mapbox://styles/mapbox/outdoors-v11">Địa hình</option>
-      <option value="mapbox://styles/mapbox/satellite-streets-v11">Vệ tinh</option>
-      <option value="mapbox://styles/mapbox/light-v11">Sáng</option>
-      <option value="mapbox://styles/mapbox/dark-v11">Tối</option>
+      <option value="https://maps.track-asia.com/styles/v2/streets.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Đường phố</option>
+      <option value="https://maps.track-asia.com/styles/v1/satellite.json?key0dfb3c4c83ebea6ae11754971709ddea53">Vệ tinh</option>
+      <option value="https://maps.track-asia.com/styles/v1/simple.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Đơn giản</option>
+      <option value="https://maps.track-asia.com/styles/v1/night.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Tối</option>
     </select>
   </div>
 </div>
 
-<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<!-- TrackAsia GL JS -->
+<script src="https://unpkg.com/trackasia-gl@2.0.1/dist/trackasia-gl.js"></script>
+
+<!-- TrackAsia Directions JS -->
+<script src="https://unpkg.com/trackasia-gl-directions/dist/trackasia-gl-directions.js"></script>
+
+<!-- JS riêng của bạn -->
 <script src="script.js"></script>
 
-</script>
-  <script>
-     window.onload = () => {
+<script>
+ window.onload = () => {
       const height = document.body.scrollHeight;
       window.parent.postMessage({ type: 'resize-iframe', height }, '*');
-    };
-  </script>
+ };
+</script>
 </body>
 </html>
-
