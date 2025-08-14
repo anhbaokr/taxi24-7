@@ -187,12 +187,16 @@ select:focus {
   z-index: 1200;
   border-radius: 6px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-  max-height: 150px;
+  max-height: 200px; /* tăng để thấy nhiều gợi ý */
   overflow-y: auto;
+
+  /* cho vuốt mượt trên mobile */
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .suggestions div {
-  padding: 8px 14px;
+  padding: 12px 14px; /* tăng padding để dễ bấm trên điện thoại */
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
@@ -200,6 +204,8 @@ select:focus {
 .suggestions div:hover {
   background-color: #e0f0ff;
 }
+
+
 
 /* ===================== Map ===================== */
 #map {
