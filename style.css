@@ -1,6 +1,8 @@
 /* ===================== Reset & body ===================== */
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
@@ -29,11 +31,11 @@ form {
   border-radius: 10px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.1);
   width: 100%;
-  max-width: 480px; /* Giới hạn rộng tối đa */
+  max-width: 480px;
   margin-bottom: 10px;
-  position: relative;
 }
 
+/* ===================== Form body ===================== */
 .form-body {
   display: flex;
   flex-direction: column;
@@ -44,15 +46,24 @@ form {
 .input-row {
   display: flex;
   gap: 10px;
-  flex-wrap: wrap; /* Cho phép xuống dòng khi màn hình nhỏ */
+  flex-wrap: nowrap;
+  align-items: center;
 }
 
-/* ===================== Input group ===================== */
+/* ===================== Inputs container ===================== */
+.inputs-container {
+  flex: 1 1 auto; /* chiếm toàn bộ không gian còn lại */
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* khoảng cách giữa 2 input */
+}
+
 .input-group {
   position: relative;
-  flex: 1 1 100%; /* tự co giãn, chiếm hết width nếu cần */
+  width: 100%;
 }
 
+/* ===================== SVG icon ===================== */
 .input-group svg {
   position: absolute;
   left: 10px;
@@ -69,12 +80,13 @@ input[type="text"],
 input[type="tel"],
 input[type="datetime-local"] {
   width: 100%;
-  padding: 6px 10px 6px 34px; /* padding-left để nhường chỗ icon */
+  padding: 6px 36px 6px 34px; /* đủ chừa chỗ icon và nút */
   font-size: 14px;
   border: 2px solid #ccc;
   border-radius: 6px;
   height: 30px;
   transition: border-color 0.3s ease;
+  box-sizing: border-box;
 }
 
 input::placeholder {
@@ -109,23 +121,61 @@ select:focus {
 /* ===================== Current location button ===================== */
 #btn-current-location {
   position: absolute;
-  right: 6px;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);
-  background-color: #0074D9;
+  width: 28px;
+  height: 28px;
+  background-color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  z-index: 1100;
+  padding: 0;
+  transition: background-color 0.2s ease;
+}
+
+#btn-current-location:hover {
+  background-color: #f0f0f0;
+}
+
+#btn-current-location:active {
+  background-color: #e0e0e0;
+}
+
+#btn-current-location::before {
+  content: '';
+  display: block;
+  width: 18px;
+  height: 18px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23007BD9"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm0-5c.552 0 1 .448 1 1v2.065a8.002 8.002 0 014.935 4.935H21c.552 0 1 .448 1 1s-.448 1-1 1h-2.065a8.002 8.002 0 01-4.935 4.935V21c0 .552-.448 1-1 1s-1-.448-1-1v-2.065a8.002 8.002 0 01-4.935-4.935H3c-.552 0-1-.448-1-1s.448-1 1-1h2.065a8.002 8.002 0 014.935-4.935V4c0-.552.448-1 1-1z"/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* ===================== Reverse button ===================== */
+#btn-reverse-vertical {
+  flex: 0 0 36px;
+  margin-right: 10px;
+  background-color: #28a745;
   color: white;
   border: none;
   border-radius: 6px;
-  padding: 3px 7px;
-  font-size: 11px;
   cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.3s ease;
-  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  user-select: none;
+  height: auto;
+  padding: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
-
-#btn-current-location:hover { background-color: #005fa3; }
-#btn-current-location:active { background-color: #00407a; }
 
 /* ===================== Suggestions dropdown ===================== */
 .suggestions {
@@ -154,11 +204,15 @@ select:focus {
 /* ===================== Map ===================== */
 #map {
   width: 100%;
-  max-width: 480px; /* Giới hạn rộng tối đa */
-  height: 300px; /* giảm chiều cao cho mobile */
+  max-width: 480px;
+  height: 300px;
   border-radius: 12px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.12);
   position: relative;
+}
+
+.trackasia-gl-map {
+  border-radius: 12px;
 }
 
 /* ===================== Map style selector ===================== */
@@ -202,30 +256,50 @@ select:focus {
 }
 
 /* ===================== Buttons ===================== */
-.btn-reverse-vertical {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    width: 36px;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    display: flex;
-    align-items: center;      /* căn icon giữa chiều dọc */
-    justify-content: center;
-    font-size: 24px;
-    user-select: none;
-    height: auto;             /* bỏ height cố định */
-    padding: 0;
-    flex: 0 0 auto;           /* không kéo dài theo chiều cao row */
+#route-form button[type="submit"] {
+  background: linear-gradient(90deg, #0074D9, #00aaff);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 25px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  width: 100%;
 }
+
+#route-form button[type="submit"]:hover {
+  background: linear-gradient(90deg, #005fa3, #0099dd);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+}
+
+#route-form button[type="submit"]:active {
+  background: linear-gradient(90deg, #00407a, #0077aa);
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+.input-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch; /* cho các phần tử con cùng cao */
+}
+
+#btn-reverse-vertical {
+  flex: 0 0 36px; /* giữ chiều rộng cố định */
+  margin-right: 10px;
+  height: auto; /* để flex stretch theo container */
+}
+
 
 /* ===================== Checkbox row ===================== */
 .checkbox-row {
   display: flex;
   align-items: center;
   gap: 20px;
-  flex-wrap: wrap; /* wrap khi màn hình nhỏ */
+  flex-wrap: wrap;
 }
 
 .checkbox-label {
@@ -261,16 +335,16 @@ input#night-surcharge {
   font-weight: 700;
   margin-left: 6px;
   font-size: 14px;
-  color: #d9534f; /* đỏ nếu không giờ đêm */
+  color: #d9534f;
   user-select: none;
   display: none;
 }
 
 #night-surcharge:checked + #night-surcharge-status {
-  color: #28a745; /* xanh khi giờ đêm và checked */
+  color: #28a745;
 }
 
-/* ================= Input datetime-local với icon ================= */
+/* ===================== Input datetime-local với icon ===================== */
 .input-datetime {
   position: relative;
   width: 100%;
@@ -289,7 +363,7 @@ input#night-surcharge {
 
 .input-datetime input[type="datetime-local"] {
   width: 100%;
-  padding: 6px 10px 6px 34px; /* padding-left để nhường chỗ icon */
+  padding: 6px 10px 6px 34px;
   font-size: 14px;
   border: 2px solid #ccc;
   border-radius: 6px;
@@ -304,6 +378,25 @@ input#night-surcharge {
   box-shadow: 0 0 6px #0074D9aa;
 }
 
+/* ===================== TrackAsia Popup ===================== */
+.ta-popup {
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  padding: 6px 10px;
+}
+
+.ta-popup button {
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.ta-popup .btn-start { background-color: #28a745; }
+.ta-popup .btn-end { background-color: #d9534f; }
+
 /* ===================== Responsive ===================== */
 @media screen and (max-width: 480px) {
     input, select, button {
@@ -314,10 +407,37 @@ input#night-surcharge {
         font-size: 18px;
     }
     #map {
-        height: 250px; /* giảm chiều cao map cho mobile */
+        height: 250px;
     }
     .input-row, .checkbox-row {
         flex-direction: column;
         gap: 8px;
     }
+}
+
+/* ===================== Nút Đặt Xe ===================== */
+#route-form button[type="submit"] {
+  background: linear-gradient(90deg, #0074D9, #00aaff);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 25px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+#route-form button[type="submit"]:hover {
+  background: linear-gradient(90deg, #005fa3, #0099dd);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.25);
+}
+
+#route-form button[type="submit"]:active {
+  background: linear-gradient(90deg, #00407a, #0077aa);
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
 }
