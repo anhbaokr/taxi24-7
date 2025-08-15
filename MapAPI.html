@@ -2,16 +2,58 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Đặt Xe Nhanh - Tìm đường & Bản đồ</title>
-<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+
+<!-- TrackAsia GL CSS -->
+<link rel="stylesheet" href="https://unpkg.com/trackasia-gl@2.0.1/dist/trackasia-gl.css" />
+<link rel="stylesheet" href="https://unpkg.com/trackasia-gl-directions/dist/trackasia-gl-directions.css" />
+
+<!-- CSS riêng của bạn -->
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<h1>Đặt Xe Nhanh - Taxi24h.Online</h1>
+
 <div id="main-container">
+  <!-- Bản đồ, thêm class full-top-map -->
+  <div id="map" class="full-top-map">
+    <select id="style-select">
+      <option value="https://maps.track-asia.com/styles/v2/streets.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Đường phố</option>
+      <option value="https://maps.track-asia.com/styles/v1/satellite.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Vệ tinh</option>
+      <option value="https://maps.track-asia.com/styles/v1/simple.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Đơn giản</option>
+      <option value="https://maps.track-asia.com/styles/v1/night.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Tối</option>
+    </select>
+
+    <div id="route-info"></div> <!-- Thông tin khoảng cách/giá tiền -->
+  </div>
+
+  <!-- Form đặt xe -->
   <form id="route-form">
     <div class="form-body">
+
+      <!-- === Điểm đi + Điểm đến (Đã lên trên) === -->
+      <div class="input-row" style="margin-top:10px;">
+        <button id="btn-reverse-vertical" class="btn-reverse-vertical" title="Đảo chiều" type="button">⇅</button>
+        <div class="inputs-container">
+          <div class="input-group">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+            <input type="text" id="start" placeholder="Điểm đi..." autocomplete="off" />
+            <button id="btn-current-location" type="button" title="Vị trí hiện tại"></button>
+            <div id="start-suggestions" class="suggestions"></div>
+          </div>
+          <div class="input-group">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M12 2L2 7v6c0 5 5 9 10 9s10-4 10-9V7l-10-5z"/>
+            </svg>
+            <input type="text" id="end" placeholder="Điểm đến..." autocomplete="off" />
+            <div id="end-suggestions" class="suggestions"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- === Tên + Số điện thoại (Đã xuống dưới) === -->
       <div class="input-row">
         <div class="input-group">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -27,6 +69,7 @@
         </div>
       </div>
 
+      <!-- === Loại xe === -->
       <select id="vehicle-type">
         <option value="" disabled selected>Chọn loại xe</option>
         <option value="5-chỗ">5 chỗ</option>
@@ -35,34 +78,16 @@
         <option value="xe-tai">Xe tải</option>
       </select>
 
-      <div class="input-datetime">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M7 10h5v5H7zm6-7h2v2h-2zm4 0h2v2h-2zm-9 0h2v2H8zm11 4v14H4V7h16zm0-2H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/>
-        </svg>
-        <input type="datetime-local" id="datetime" />
-      </div>
+      <!-- === Ngày giờ === -->
+<div class="input-datetime">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M7 10h5v5H7zm6-7h2v2h-2zm4 0h2v2h-2zm-9 0h2v2H8zm11 4v14H4V7h16zm0-2H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/>
+  </svg>
+  <input type="datetime-local" id="datetime" placeholder=" " />
+  <label for="datetime" class="time-placeholder">dd/mm/yyyy --:-- --</label>
+</div>
 
-      <div class="input-row" style="margin-top:10px;">
-        <button id="btn-reverse-vertical" class="btn-reverse-vertical" title="Đảo chiều" type="button">⇅</button>
-        <div class="inputs-container">
-          <div class="input-group">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-            </svg>
-            <input type="text" id="start" placeholder="Điểm đi..." autocomplete="off" />
-            <button id="btn-current-location" type="button" title="Vị trí hiện tại">📍</button>
-            <div id="start-suggestions" class="suggestions"></div>
-          </div>
-          <div class="input-group">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d="M12 2L2 7v6c0 5 5 9 10 9s10-4 10-9V7l-10-5z"/>
-            </svg>
-            <input type="text" id="end" placeholder="Điểm đến..." autocomplete="off" />
-            <div id="end-suggestions" class="suggestions"></div>
-          </div>
-        </div>
-      </div>
-
+      <!-- === Checkbox row === -->
       <div class="checkbox-row">
         <label for="round-trip" class="checkbox-label">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -81,26 +106,18 @@
         </label>
       </div>
 
+      <!-- === Button đặt xe === -->
       <button type="submit" style="margin-top:10px; padding:10px 20px; font-weight:600; cursor:pointer;">Đặt xe</button>
+
     </div>
   </form>
-
-  <div id="route-info"></div>
-
-  <div id="map">
-    <select id="style-select">
-      <option value="mapbox://styles/mapbox/streets-v11" selected>Đường phố</option>
-      <option value="mapbox://styles/mapbox/outdoors-v11">Địa hình</option>
-      <option value="mapbox://styles/mapbox/satellite-streets-v11">Vệ tinh</option>
-      <option value="mapbox://styles/mapbox/light-v11">Sáng</option>
-      <option value="mapbox://styles/mapbox/dark-v11">Tối</option>
-    </select>
-  </div>
 </div>
 
-<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<!-- TrackAsia GL JS -->
+<script src="https://unpkg.com/trackasia-gl@2.0.1/dist/trackasia-gl.js"></script>
+<script src="https://unpkg.com/trackasia-gl-directions/dist/trackasia-gl-directions.js"></script>
 <script src="script.js"></script>
 
-</script>
 </body>
+
 </html>
