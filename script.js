@@ -233,9 +233,14 @@ async function drawRouteAndComputePrice() {
     if(document.getElementById('round-trip').checked) price*=1.25;
     if(nightCheckbox.checked) price*=1.2;
 
+    // --- Chỉnh thời gian hiển thị ---
+    let hours = Math.floor(duration_min / 60);
+    let minutes = duration_min % 60;
+    let durationStr = hours > 0 ? `${hours} giờ ${minutes} phút` : `${minutes} phút`;
+
     routeInfoDiv.innerHTML = `
         Quãng đường: <span style="color:red; font-weight:700;">${distance_km.toFixed(2)} km</span> |
-        Thời gian: <span style="color:red; font-weight:700;">${duration_min} phút</span> | 
+        Thời gian: <span style="color:red; font-weight:700;">${durationStr}</span> | 
         Giá: <span style="color:red; font-weight:700;">💰 ${price.toLocaleString()} VND</span>
     `;
 }
