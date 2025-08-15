@@ -18,25 +18,25 @@ map.addControl(new trackasiagl.NavigationControl(), 'bottom-right');
 map.addControl(new trackasiagl.ScaleControl());
 map.addControl(new trackasiagl.FullscreenControl(), 'top-right');
 
-// ==================== GeolocateControl ====================
+// ==================== GeolocateControl mặc định trên bản đồ ====================
 const geolocateControl = new trackasiagl.GeolocateControl({ trackUserLocation: true });
 map.addControl(geolocateControl, 'bottom-right');
 
 geolocateControl.on('geolocate', async (event) => {
     const coords = [event.coords.longitude, event.coords.latitude];
     const label = await reverseGeocode(coords);
-    selectStart(coords, label);
+    selectStart(coords, label); // Ghim marker và điền input điểm đi
     map.flyTo({ center: coords, zoom: 14 });
 });
 
-// ==================== TrackAsiaDirections ====================
+// ==================== Setup TrackAsiaDirections Plugin ====================
 const customStyles = [
     {
         'id': 'directions-route-line-alt',
         'type': 'line',
         'source': 'directions',
         'layout': { 'line-cap': 'round', 'line-join': 'round' },
-        'paint': { 'line-color': '#bbb', 'line-width': 3 },
+        'paint': { 'line-color': '#bbb', 'line-width': 5 },
         'filter': ['all', ['in', '$type', 'LineString'], ['in', 'route', 'alternate']]
     },
     {
@@ -44,7 +44,7 @@ const customStyles = [
         'type': 'line',
         'source': 'directions',
         'layout': { 'line-cap': 'round', 'line-join': 'round' },
-        'paint': { 'line-color': '#2d5f99', 'line-width': 3 },
+        'paint': { 'line-color': '#2d5f99', 'line-width': 5 },
         'filter': ['all', ['in', '$type', 'LineString'], ['in', 'route', 'selected']]
     },
     {
@@ -62,7 +62,7 @@ const customStyles = [
                                 ['heavy', '#e34341'],
                                 ['severe', '#8b2342']
                             ]},
-            'line-width': 3
+            'line-width': 5
         },
         'filter': ['all', ['in', '$type', 'LineString'], ['in', 'route', 'selected']]
     }
@@ -80,12 +80,12 @@ const directions = new TrackAsiaDirections({
 });
 map.addControl(directions, 'top-left');
 
-// ==================== Thay đổi style ====================
+// Thay đổi style bản đồ từ menu
 document.getElementById('style-select').addEventListener('change', (e) => {
     map.setStyle(e.target.value);
 });
 
-// ==================== Fit map ====================
+// ==================== Fit map to two points ====================
 function fitMapToPoints() {
     if(startCoords && endCoords){
         const bounds = new trackasiagl.LngLatBounds();
@@ -141,8 +141,9 @@ async function reverseGeocode(coords) {
     return `${coords[1].toFixed(6)}, ${coords[0].toFixed(6)}`;
 }
 
-// ==================== Marker ====================
+// ==================== Chọn Start / End ====================
 let startMarker = null, endMarker = null;
+
 function createCircleMarker(color, coords){
     const el = document.createElement('div');
     el.style.width = '20px';
@@ -180,7 +181,7 @@ function selectEnd(coords, label) {
     fitMapToPoints();
 }
 
-// ==================== Night surcharge ====================
+// ==================== Night Surcharge ====================
 const datetimeInput = document.getElementById('datetime');
 const nightCheckbox = document.getElementById('night-surcharge');
 const nightStatus = document.getElementById('night-surcharge-status');
@@ -239,7 +240,7 @@ async function drawRouteAndComputePrice() {
     `;
 }
 
-// ==================== Popup chọn điểm ====================
+// ==================== Popup chọn điểm trên map ====================
 map.on('click', async (e) => {
     const coords = [e.lngLat.lng, e.lngLat.lat];
 
@@ -279,13 +280,13 @@ map.on('click', async (e) => {
 setupAutocomplete('start', 'start-suggestions', selectStart);
 setupAutocomplete('end', 'end-suggestions', selectEnd);
 
-// ==================== Nút vị trí hiện tại ====================
+// ==================== Nút HTML lấy vị trí hiện tại ====================
 document.getElementById('btn-current-location').addEventListener('click', async () => {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const coords = [pos.coords.longitude, pos.coords.latitude];
             const label = await reverseGeocode(coords);
-            selectStart(coords, label);
+            selectStart(coords, label); // Ghim marker và điền input điểm đi
             map.flyTo({ center: coords, zoom: 14 });
         }, (err) => {
             alert("Không lấy được vị trí hiện tại: " + err.message);
@@ -295,7 +296,7 @@ document.getElementById('btn-current-location').addEventListener('click', async 
     }
 });
 
-// ==================== Reverse button ====================
+// ==================== Reverse Button ====================
 document.getElementById('btn-reverse-vertical').addEventListener('click', ()=>{
     [startCoords, endCoords] = [endCoords, startCoords];
     const startVal = document.getElementById('start').value;
@@ -317,18 +318,15 @@ document.getElementById('btn-reverse-vertical').addEventListener('click', ()=>{
     fitMapToPoints();
 });
 
-// ==================== Cập nhật giá ====================
+// ==================== Cập nhật giá khi thay đổi ====================
 document.getElementById('vehicle-type').addEventListener('change', drawRouteAndComputePrice);
 document.getElementById('round-trip').addEventListener('change', drawRouteAndComputePrice);
 datetimeInput.addEventListener('input', ()=>{
     updateNightSurcharge();
     drawRouteAndComputePrice();
 });
-// Thêm listener cho input start/end trực tiếp
-document.getElementById('start').addEventListener('change', drawRouteAndComputePrice);
-document.getElementById('end').addEventListener('change', drawRouteAndComputePrice);
 
-// ==================== Gửi form ====================
+// ==================== Gửi form lên Google Sheets ====================
 const routeForm = document.getElementById('route-form');
 const submitBtn = routeForm.querySelector('button[type="submit"]');
 
