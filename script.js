@@ -18,18 +18,18 @@ map.addControl(new trackasiagl.NavigationControl(), 'bottom-right');
 map.addControl(new trackasiagl.ScaleControl());
 map.addControl(new trackasiagl.FullscreenControl(), 'top-right');
 
-// ==================== GeolocateControl mặc định trên bản đồ ====================
+// ==================== GeolocateControl ====================
 const geolocateControl = new trackasiagl.GeolocateControl({ trackUserLocation: true });
 map.addControl(geolocateControl, 'bottom-right');
 
 geolocateControl.on('geolocate', async (event) => {
     const coords = [event.coords.longitude, event.coords.latitude];
     const label = await reverseGeocode(coords);
-    selectStart(coords, label); // Ghim marker và điền input điểm đi
+    selectStart(coords, label);
     map.flyTo({ center: coords, zoom: 14 });
 });
 
-// ==================== Setup TrackAsiaDirections Plugin ====================
+// ==================== TrackAsiaDirections ====================
 const customStyles = [
     {
         'id': 'directions-route-line-alt',
@@ -80,12 +80,12 @@ const directions = new TrackAsiaDirections({
 });
 map.addControl(directions, 'top-left');
 
-// Thay đổi style bản đồ từ menu
+// ==================== Thay đổi style ====================
 document.getElementById('style-select').addEventListener('change', (e) => {
     map.setStyle(e.target.value);
 });
 
-// ==================== Fit map to two points ====================
+// ==================== Fit map ====================
 function fitMapToPoints() {
     if(startCoords && endCoords){
         const bounds = new trackasiagl.LngLatBounds();
@@ -141,9 +141,8 @@ async function reverseGeocode(coords) {
     return `${coords[1].toFixed(6)}, ${coords[0].toFixed(6)}`;
 }
 
-// ==================== Chọn Start / End ====================
+// ==================== Marker ====================
 let startMarker = null, endMarker = null;
-
 function createCircleMarker(color, coords){
     const el = document.createElement('div');
     el.style.width = '20px';
@@ -181,7 +180,7 @@ function selectEnd(coords, label) {
     fitMapToPoints();
 }
 
-// ==================== Night Surcharge ====================
+// ==================== Night surcharge ====================
 const datetimeInput = document.getElementById('datetime');
 const nightCheckbox = document.getElementById('night-surcharge');
 const nightStatus = document.getElementById('night-surcharge-status');
@@ -240,7 +239,7 @@ async function drawRouteAndComputePrice() {
     `;
 }
 
-// ==================== Popup chọn điểm trên map ====================
+// ==================== Popup chọn điểm ====================
 map.on('click', async (e) => {
     const coords = [e.lngLat.lng, e.lngLat.lat];
 
@@ -280,13 +279,13 @@ map.on('click', async (e) => {
 setupAutocomplete('start', 'start-suggestions', selectStart);
 setupAutocomplete('end', 'end-suggestions', selectEnd);
 
-// ==================== Nút HTML lấy vị trí hiện tại ====================
+// ==================== Nút vị trí hiện tại ====================
 document.getElementById('btn-current-location').addEventListener('click', async () => {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const coords = [pos.coords.longitude, pos.coords.latitude];
             const label = await reverseGeocode(coords);
-            selectStart(coords, label); // Ghim marker và điền input điểm đi
+            selectStart(coords, label);
             map.flyTo({ center: coords, zoom: 14 });
         }, (err) => {
             alert("Không lấy được vị trí hiện tại: " + err.message);
@@ -296,7 +295,7 @@ document.getElementById('btn-current-location').addEventListener('click', async 
     }
 });
 
-// ==================== Reverse Button ====================
+// ==================== Reverse button ====================
 document.getElementById('btn-reverse-vertical').addEventListener('click', ()=>{
     [startCoords, endCoords] = [endCoords, startCoords];
     const startVal = document.getElementById('start').value;
@@ -318,15 +317,18 @@ document.getElementById('btn-reverse-vertical').addEventListener('click', ()=>{
     fitMapToPoints();
 });
 
-// ==================== Cập nhật giá khi thay đổi ====================
+// ==================== Cập nhật giá ====================
 document.getElementById('vehicle-type').addEventListener('change', drawRouteAndComputePrice);
 document.getElementById('round-trip').addEventListener('change', drawRouteAndComputePrice);
 datetimeInput.addEventListener('input', ()=>{
     updateNightSurcharge();
     drawRouteAndComputePrice();
 });
+// Thêm listener cho input start/end trực tiếp
+document.getElementById('start').addEventListener('change', drawRouteAndComputePrice);
+document.getElementById('end').addEventListener('change', drawRouteAndComputePrice);
 
-// ==================== Gửi form lên Google Sheets ====================
+// ==================== Gửi form ====================
 const routeForm = document.getElementById('route-form');
 const submitBtn = routeForm.querySelector('button[type="submit"]');
 
