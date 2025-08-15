@@ -7,16 +7,28 @@
 
 <!-- TrackAsia GL CSS -->
 <link rel="stylesheet" href="https://unpkg.com/trackasia-gl@2.0.1/dist/trackasia-gl.css" />
-
-<!-- TrackAsia Directions CSS -->
 <link rel="stylesheet" href="https://unpkg.com/trackasia-gl-directions/dist/trackasia-gl-directions.css" />
 
 <!-- CSS riêng của bạn -->
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<h1>Đặt Xe Nhanh - Taxi24h.Online</h1>
+
+<!-- Bỏ padding body để map có thể tràn sát top -->
 <div id="main-container">
+  <!-- Bản đồ, thêm class full-top-map -->
+  <div id="map" class="full-top-map">
+    <select id="style-select">
+      <option value="https://maps.track-asia.com/styles/v2/streets.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Đường phố</option>
+      <option value="https://maps.track-asia.com/styles/v1/satellite.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Vệ tinh</option>
+      <option value="https://maps.track-asia.com/styles/v1/simple.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Đơn giản</option>
+      <option value="https://maps.track-asia.com/styles/v1/night.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Tối</option>
+    </select>
+
+    <div id="route-info"></div> <!-- Thông tin khoảng cách/giá tiền -->
+  </div>
+
+  <!-- Form đặt xe -->
   <form id="route-form">
     <div class="form-body">
       <div class="input-row">
@@ -91,33 +103,12 @@
       <button type="submit" style="margin-top:10px; padding:10px 20px; font-weight:600; cursor:pointer;">Đặt xe</button>
     </div>
   </form>
-
-  <div id="route-info"></div>
-
-  <div id="map">
-    <select id="style-select">
-      <option value="https://maps.track-asia.com/styles/v2/streets.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Đường phố</option>
-      <option value="https://maps.track-asia.com/styles/v1/satellite.json?key0dfb3c4c83ebea6ae11754971709ddea53">Vệ tinh</option>
-      <option value="https://maps.track-asia.com/styles/v1/simple.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Đơn giản</option>
-      <option value="https://maps.track-asia.com/styles/v1/night.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Tối</option>
-    </select>
-  </div>
 </div>
 
 <!-- TrackAsia GL JS -->
 <script src="https://unpkg.com/trackasia-gl@2.0.1/dist/trackasia-gl.js"></script>
-
-<!-- TrackAsia Directions JS -->
 <script src="https://unpkg.com/trackasia-gl-directions/dist/trackasia-gl-directions.js"></script>
-
-<!-- JS riêng của bạn -->
 <script src="script.js"></script>
 
-<script>
- window.onload = () => {
-      const height = document.body.scrollHeight;
-      window.parent.postMessage({ type: 'resize-iframe', height }, '*');
- };
-</script>
 </body>
 </html>
