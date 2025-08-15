@@ -133,7 +133,7 @@ input[type="text"],
 input[type="tel"],
 input[type="datetime-local"] {
   width: 100%;
-  padding: 5px 32px 5px 32px; /* nhỏ hơn để gọn */
+  padding: 5px 32px 5px 32px; /* padding đủ cho icon và chữ */
   font-size: 13px;
   border: 2px solid #ccc;
   border-radius: 6px;
@@ -174,7 +174,7 @@ select:focus {
 /* ===================== Current location button ===================== */
 #btn-current-location {
   position: absolute;
-  right: 4px;
+  right: 6px;
   top: 50%;
   transform: translateY(-50%);
   width: 24px;
@@ -350,7 +350,7 @@ input#night-surcharge {
   display: inline;
 }
 
-/* ===================== Input datetime-local với icon ===================== */
+/* ===================== Input datetime-local với icon và label ===================== */
 .input-datetime {
   position: relative;
   width: 100%;
@@ -376,13 +376,26 @@ input#night-surcharge {
   height: 28px;
   transition: border-color 0.3s ease;
   box-sizing: border-box;
+  background: transparent;
+  color: #004a99;
 }
 
-.input-datetime input[type="datetime-local"]:focus {
-  border-color: #0074D9;
-  outline: none;
-  box-shadow: 0 0 6px #0074D9aa;
+/* giả lập label trong input */
+.input-datetime input[type="datetime-local"]:not(:placeholder-shown) + .datetime-label {
+  display: none;
 }
+
+.input-datetime .datetime-label {
+  position: absolute;
+  left: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: #aaa;
+  pointer-events: none;
+  transition: 0.2s all ease;
+}
+
 
 /* ===================== TrackAsia Popup ===================== */
 .ta-popup {
