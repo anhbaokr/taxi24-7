@@ -249,14 +249,13 @@ map.on('click', async (e) => {
     popupDiv.style.gap = '10px';
 
     const btnStart = document.createElement('button');
-    btnStart.textContent = 'Chọn làm điểm đi';
-    Object.assign(btnStart.style, { flex: '1', cursor: 'pointer', borderRadius: '6px', border: 'none', backgroundColor: '#28a745', color: 'white', padding: '6px 8px', fontWeight: '600' });
-
+	btnStart.textContent='Chọn làm điểm đi';
+	Object.assign(btnStart.style,{flex:'1',cursor:'pointer',borderRadius:'4px',border:'none',backgroundColor:'#28a745',color:'white',padding:'3px 5px',fontSize:'11px',fontWeight:'600'}); 
     const btnEnd = document.createElement('button');
-    btnEnd.textContent = 'Chọn làm điểm đến';
-    Object.assign(btnEnd.style, { flex: '1', cursor: 'pointer', borderRadius: '6px', border: 'none', backgroundColor: '#d9534f', color: 'white', padding: '6px 8px', fontWeight: '600' });
+    btnEnd.textContent='Chọn làm điểm đến';
+    Object.assign(btnEnd.style,{flex:'1',cursor:'pointer',borderRadius:'4px',border:'none',backgroundColor:'#d9534f',color:'white',padding:'3px 5px',fontSize:'11px',fontWeight:'600'});
 
-    popupDiv.appendChild(btnStart);
+	popupDiv.appendChild(btnStart);
     popupDiv.appendChild(btnEnd);
 
     const popup = new trackasiagl.Popup({ closeOnClick: true })
