@@ -17,8 +17,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100vh;
-  padding-top: 0; /* xóa khoảng cách trên để map tràn top */
+  min-height: 100%;
 }
 
 /* ===================== Header ===================== */
@@ -34,15 +33,16 @@ h1 {
 #main-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  flex: 1;                /* chiếm toàn bộ chiều cao còn lại */
   width: 100%;
+  align-items: center;
 }
 
-/* ===================== Map full width ===================== */
+/* ===================== Map ===================== */
 #map {
-  width: 100vw;
+  flex: 0 0 60%;          /* map chiếm 60% chiều cao container */
+  width: 100%;
   max-width: 100%;
-  height: 60vh;
   border-radius: 0;
   box-shadow: none;
   margin-bottom: 20px;
@@ -53,7 +53,7 @@ h1 {
   border-radius: 0;
 }
 
-/* ===================== Map style selector trên map ===================== */
+/* ===================== Map style selector ===================== */
 #style-select {
   position: absolute;
   top: 2px;
@@ -68,7 +68,6 @@ h1 {
   border: 1px solid #ccc;
   z-index: 1000;
   cursor: pointer;
-  box-sizing: border-box;
 }
 
 #style-select:focus {
@@ -77,10 +76,10 @@ h1 {
   box-shadow: 0 0 8px #0074D9aa;
 }
 
-/* ===================== Form container ===================== */
+/* ===================== Form ===================== */
 form {
   background-color: white;
-  padding: 10px; /* nhỏ hơn để gọn */
+  padding: 10px;
   border-radius: 10px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.1);
   width: 90%;
@@ -88,22 +87,20 @@ form {
   margin-bottom: 40px;
 }
 
-/* ===================== Form body ===================== */
 .form-body {
   display: flex;
   flex-direction: column;
-  gap: 5px; /* khoảng cách giữa các dòng nhỏ hơn */
+  gap: 5px;
 }
 
 /* ===================== Input row ===================== */
 .input-row {
   display: flex;
-  gap: 5px; /* khoảng cách giữa các input nhỏ */
+  gap: 5px;
   flex-wrap: nowrap;
-  align-items: stretch;
+  align-items: stretch; /* stretch để nút cao bằng input */
 }
 
-/* ===================== Inputs container ===================== */
 .inputs-container {
   flex: 1 1 auto;
   display: flex;
@@ -116,7 +113,7 @@ form {
   width: 100%;
 }
 
-/* ===================== SVG icon trong input ===================== */
+/* ===================== Input icons ===================== */
 .input-group svg {
   position: absolute;
   left: 6px;
@@ -133,13 +130,12 @@ input[type="text"],
 input[type="tel"],
 input[type="datetime-local"] {
   width: 100%;
-  padding: 5px 32px 5px 32px; /* nhỏ hơn để gọn */
+  padding: 5px 32px 5px 32px;
   font-size: 13px;
   border: 2px solid #ccc;
   border-radius: 6px;
   height: 28px;
   transition: border-color 0.3s ease;
-  box-sizing: border-box;
 }
 
 input::placeholder {
@@ -161,7 +157,6 @@ select {
   border-radius: 6px;
   border: 2px solid #ccc;
   height: 28px;
-  box-sizing: border-box;
   transition: border-color 0.3s ease;
 }
 
@@ -237,8 +232,6 @@ select:focus {
   box-shadow: 0 3px 10px rgba(0,0,0,0.15);
   max-height: 150px;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
 }
 
 .suggestions div {
@@ -251,7 +244,7 @@ select:focus {
   background-color: #e0f0ff;
 }
 
-/* ===================== Route info trên bản đồ ===================== */
+/* ===================== Route info ===================== */
 #route-info {
   position: absolute;
   bottom: 5px;
@@ -269,7 +262,7 @@ select:focus {
   z-index: 1000;
 }
 
-/* ===================== Nút Đặt xe ===================== */
+/* ===================== Route submit button ===================== */
 #route-form button[type="submit"] {
   background: linear-gradient(90deg, #0074D9, #00aaff);
   color: #fff;
@@ -296,7 +289,7 @@ select:focus {
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-/* ===================== Checkbox row ===================== */
+/* ===================== Checkbox ===================== */
 .checkbox-row {
   display: flex;
   align-items: center;
@@ -304,7 +297,6 @@ select:focus {
   flex-wrap: nowrap;
   justify-content: flex-start;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .checkbox-label {
@@ -341,7 +333,6 @@ input#night-surcharge {
   margin-left: 4px;
   font-size: 13px;
   color: #d9534f;
-  user-select: none;
   display: none;
 }
 
@@ -350,38 +341,52 @@ input#night-surcharge {
   display: inline;
 }
 
-/* ===================== Input datetime-local với icon ===================== */
+/* ===================== Input datetime ===================== */
 .input-datetime {
   position: relative;
-  width: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .input-datetime svg {
   position: absolute;
-  left: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  fill: #0074D9;
+  left: 8px;
+  width: 20px;
+  height: 20px;
+  fill: #555;
   pointer-events: none;
 }
 
 .input-datetime input[type="datetime-local"] {
   width: 100%;
-  padding: 5px 10px 5px 32px;
+  padding: 6px 8px 6px 32px;
   font-size: 13px;
   border: 2px solid #ccc;
   border-radius: 6px;
-  height: 28px;
-  transition: border-color 0.3s ease;
   box-sizing: border-box;
+  transition: border-color 0.3s ease;
 }
 
-.input-datetime input[type="datetime-local"]:focus {
+.input-datetime input:focus {
   border-color: #0074D9;
   outline: none;
   box-shadow: 0 0 6px #0074D9aa;
+}
+
+.input-datetime .time-placeholder {
+  position: absolute;
+  left: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  font-size: 13px;
+  pointer-events: none;
+  transition: 0.2s;
+}
+
+.input-datetime input:focus + .time-placeholder,
+.input-datetime input:not(:placeholder-shown) + .time-placeholder {
+  opacity: 0;
 }
 
 /* ===================== TrackAsia Popup ===================== */
@@ -405,79 +410,24 @@ input#night-surcharge {
 
 /* ===================== Responsive ===================== */
 @media screen and (max-width: 768px) {
-  #map { height: 50vh; }
+  #map { flex: 0 0 50%; }      /* map thấp hơn trên tablet */
   form, #route-info { width: 95%; }
 }
 
-@media screen and (max-width: 480px) {
-  input, select, button { font-size: 12px; padding: 4px; }
-  h1, h2, h3 { font-size: 16px; }
-  #map { height: 40vh; }
-  form, #route-info { width: 95%; }
-  .input-row { flex-direction: column; gap: 5px; }
-}
-/* ===== Gợi ý định dạng cho input datetime ===== */
-.input-datetime {
-  position: relative; /* Để label bám vào */
-}
-
-.input-datetime label.time-placeholder {
-  position: absolute;
-  left: 32px; /* cách icon */
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 12px;
-  color: #aaa;
-  pointer-events: none;
-  font-style: italic;
-  white-space: nowrap;
-}
-
-.input-datetime input[type="datetime-local"]:focus + label.time-placeholder,
-.input-datetime input[type="datetime-local"]:not(:placeholder-shown) + label.time-placeholder {
-  display: none;
-}
-/* ===== CSS TỐI ƯU CHO ĐIỆN THOẠI ===== */
-/* ===== Căn chỉnh nút đảo chiều cho mobile ===== */
 @media (max-width: 480px) {
-  .input-row {
-    flex-direction: row;       /* Vẫn xếp ngang cho nút ở ngoài */
-    align-items: center;
-  }
-
   #btn-reverse-vertical {
-    order: -1;                 /* Đưa nút lên trước input */
-    margin-right: 5px;
-    margin-left: 0;
-  }
-
-  .inputs-container {
-    flex: 1;
+    height: 28px;          
+    flex: 0 0 auto;        
+    margin-right: 5px;     
     display: flex;
-    flex-direction: column;
-    gap: 5px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 18px;
   }
 
-  /* Đảm bảo icon và placeholder không đè nhau */
-  .input-group input {
-    padding-left: 32px; /* chừa khoảng cho icon bên trái */
-  }
-
-  .input-group svg {
-    left: 8px; /* icon không sát quá */
-  }
-}
-
-
-#vehicle-type {
-  font-size: 14px;       /* chữ nhỏ hơn */
-  padding: 6px 8px;      /* thu nhỏ khoảng đệm */
-  height: auto;          /* tránh chiều cao bị cố định quá lớn */
-}
-
-@media (max-width: 480px) {
-  #vehicle-type {
-    font-size: 13px;     /* chữ nhỏ hơn nữa trên màn hình rất nhỏ */
-    padding: 5px 6px;
-  }
-}
+  .input-row {
+    flex-direction: row;   
+    flex-wrap: wrap;
+    align-items: center;  
+    gap
