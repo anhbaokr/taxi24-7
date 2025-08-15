@@ -18,7 +18,6 @@ map.addControl(new trackasiagl.NavigationControl(), 'bottom-right');
 map.addControl(new trackasiagl.ScaleControl());
 map.addControl(new trackasiagl.FullscreenControl(), 'top-right');
 
-// ==================== GeolocateControl ====================
 const geolocateControl = new trackasiagl.GeolocateControl({ trackUserLocation: true });
 map.addControl(geolocateControl, 'bottom-right');
 
@@ -29,7 +28,7 @@ geolocateControl.on('geolocate', async (event) => {
     map.flyTo({ center: coords, zoom: 14 });
 });
 
-// ==================== TrackAsiaDirections ====================
+// ==================== TrackAsia Directions ====================
 const customStyles = [
     {
         'id': 'directions-route-line-alt',
@@ -80,12 +79,12 @@ const directions = new TrackAsiaDirections({
 });
 map.addControl(directions, 'top-left');
 
-// ==================== Thay đổi style ====================
+// Thay đổi style bản đồ
 document.getElementById('style-select').addEventListener('change', (e) => {
     map.setStyle(e.target.value);
 });
 
-// ==================== Fit map ====================
+// ==================== Fit map to points ====================
 function fitMapToPoints() {
     if(startCoords && endCoords){
         const bounds = new trackasiagl.LngLatBounds();
@@ -141,8 +140,9 @@ async function reverseGeocode(coords) {
     return `${coords[1].toFixed(6)}, ${coords[0].toFixed(6)}`;
 }
 
-// ==================== Marker ====================
+// ==================== Markers ====================
 let startMarker = null, endMarker = null;
+
 function createCircleMarker(color, coords){
     const el = document.createElement('div');
     el.style.width = '20px';
@@ -163,8 +163,9 @@ function selectStart(coords, label) {
 
     if(endCoords) directions.setDestination(endCoords);
     directions.setOrigin(coords);
-    drawRouteAndComputePrice();
+
     fitMapToPoints();
+    // ❌ Không gọi drawRouteAndComputePrice() ở đây
 }
 
 function selectEnd(coords, label) {
@@ -176,11 +177,12 @@ function selectEnd(coords, label) {
 
     if(startCoords) directions.setOrigin(startCoords);
     directions.setDestination(coords);
-    drawRouteAndComputePrice();
+
     fitMapToPoints();
+    // ❌ Không gọi drawRouteAndComputePrice() ở đây
 }
 
-// ==================== Night surcharge ====================
+// ==================== Night Surcharge ====================
 const datetimeInput = document.getElementById('datetime');
 const nightCheckbox = document.getElementById('night-surcharge');
 const nightStatus = document.getElementById('night-surcharge-status');
@@ -201,10 +203,16 @@ function updateNightSurcharge() {
     nightStatus.style.color = night ? "green" : "red";
 }
 
-// ==================== Tính giá + quãng đường ====================
+// ==================== Tính quãng đường + giá ====================
 async function drawRouteAndComputePrice() {
     if (!startCoords || !endCoords) {
         routeInfoDiv.textContent = "";
+        return;
+    }
+
+    const vehicle = document.getElementById('vehicle-type').value;
+    if(!vehicle){
+        routeInfoDiv.innerHTML = `<span style="color:red; font-weight:600;">VUI LÒNG CHỌN LOẠI XE ĐỂ HIỆN THÔNG TIN</span>`;
         return;
     }
 
@@ -220,14 +228,7 @@ async function drawRouteAndComputePrice() {
         }
     } catch (err) { console.error(err); }
 
-    const vehicle = document.getElementById('vehicle-type').value;
     const basePrices = { '5-chỗ': 10000, '7-chỗ': 12000, '16-chỗ': 20000, 'xe-tai': 25000 };
-
-    if(!vehicle){
-        routeInfoDiv.innerHTML = `<span style="color:red; font-weight:600;">VUI LÒNG CHỌN LOẠI XE ĐỂ HIỆN THÔNG TIN</span>`;
-        return;
-    }
-
     let price = basePrices[vehicle]*distance_km;
     if(document.getElementById('round-trip').checked) price*=1.25;
     if(nightCheckbox.checked) price*=1.2;
@@ -275,7 +276,7 @@ map.on('click', async (e) => {
     };
 });
 
-// ==================== Setup Autocomplete ====================
+// ==================== Autocomplete ====================
 setupAutocomplete('start', 'start-suggestions', selectStart);
 setupAutocomplete('end', 'end-suggestions', selectEnd);
 
@@ -295,7 +296,7 @@ document.getElementById('btn-current-location').addEventListener('click', async 
     }
 });
 
-// ==================== Reverse button ====================
+// ==================== Nút đảo điểm ====================
 document.getElementById('btn-reverse-vertical').addEventListener('click', ()=>{
     [startCoords, endCoords] = [endCoords, startCoords];
     const startVal = document.getElementById('start').value;
@@ -317,16 +318,20 @@ document.getElementById('btn-reverse-vertical').addEventListener('click', ()=>{
     fitMapToPoints();
 });
 
-// ==================== Cập nhật giá ====================
-document.getElementById('vehicle-type').addEventListener('change', drawRouteAndComputePrice);
+// ==================== Event thay đổi để hiển thị giá ====================
+document.getElementById('vehicle-type').addEventListener('change', ()=>{
+    if(startCoords && endCoords){
+        updateNightSurcharge();
+        drawRouteAndComputePrice();
+    } else {
+        routeInfoDiv.innerHTML = "<span style='color:red; font-weight:600;'>VUI LÒNG CHỌN ĐIỂM ĐI VÀ ĐIỂM ĐẾN</span>";
+    }
+});
 document.getElementById('round-trip').addEventListener('change', drawRouteAndComputePrice);
 datetimeInput.addEventListener('input', ()=>{
     updateNightSurcharge();
     drawRouteAndComputePrice();
 });
-// Thêm listener cho input start/end trực tiếp
-document.getElementById('start').addEventListener('change', drawRouteAndComputePrice);
-document.getElementById('end').addEventListener('change', drawRouteAndComputePrice);
 
 // ==================== Gửi form ====================
 const routeForm = document.getElementById('route-form');
