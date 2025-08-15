@@ -438,44 +438,37 @@ input#night-surcharge {
   display: none;
 }
 /* ===== CSS TỐI ƯU CHO ĐIỆN THOẠI ===== */
-@media screen and (max-width: 480px) {
-  body {
-    padding: 5px;
+/* ===== Căn chỉnh nút đảo chiều cho mobile ===== */
+@media (max-width: 480px) {
+  .input-row {
+    flex-direction: row;       /* Vẫn xếp ngang cho nút ở ngoài */
+    align-items: center;
   }
 
-  .container {
-    padding: 8px;
+  #btn-reverse-vertical {
+    order: -1;                 /* Đưa nút lên trước input */
+    margin-right: 5px;
+    margin-left: 0;
   }
 
-  .input-group,
-  .input-datetime {
+  .inputs-container {
+    flex: 1;
+    display: flex;
     flex-direction: column;
-    align-items: stretch;
-    gap: 4px;
-    margin-bottom: 6px;
+    gap: 5px;
   }
 
-  input[type="text"],
-  input[type="datetime-local"],
-  select {
-    font-size: 14px;
-    padding: 6px 8px;
+  /* Đảm bảo icon và placeholder không đè nhau */
+  .input-group input {
+    padding-left: 32px; /* chừa khoảng cho icon bên trái */
   }
 
-  label {
-    font-size: 14px;
-  }
-
-  button {
-    font-size: 14px;
-    padding: 8px 10px;
-  }
-
-  h1 {
-    font-size: 18px;
-    margin-bottom: 10px;
+  .input-group svg {
+    left: 8px; /* icon không sát quá */
   }
 }
+
+
 #vehicle-type {
   font-size: 14px;       /* chữ nhỏ hơn */
   padding: 6px 8px;      /* thu nhỏ khoảng đệm */
