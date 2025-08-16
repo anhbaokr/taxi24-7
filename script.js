@@ -438,3 +438,22 @@ window.addEventListener('DOMContentLoaded', ()=>{
     if(datetimeInput.value) timePlaceholder.classList.add('has-value');
     else timePlaceholder.classList.remove('has-value');
 });
+// Bật datetime picker khi click vào bất kỳ chỗ nào trong wrapper
+       const datetimeWrapper = document.querySelector('.input-datetime');
+       datetimeWrapper.addEventListener('click', () => {
+       datetimeInput.focus(); // mở picker
+     });
+// ==================== Khởi tạo Flatpickr cho input datetime ====================
+flatpickr("#datetime", {
+    enableTime: true,
+    dateFormat: "Y-m-d\\TH:i",
+    defaultDate: document.getElementById('datetime').value || null,
+    onOpen: function(selectedDates, dateStr, instance){
+        // Khi popup lịch mở ra => đánh dấu đã click
+        datetimeTouched = true;
+    },
+    onChange: function(selectedDates, dateStr, instance){
+        updateNightSurcharge();
+        drawRouteAndComputePrice();
+    }
+});
