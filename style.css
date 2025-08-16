@@ -373,9 +373,10 @@ input#night-surcharge {
   box-shadow: 0 0 6px #0074D9aa;
 }
 
+/* placeholder hiển thị nhãn */
 .input-datetime .time-placeholder {
   position: absolute;
-  left: 32px;
+  left: 32px;           /* cách icon */
   top: 50%;
   transform: translateY(-50%);
   color: #888;
@@ -384,10 +385,12 @@ input#night-surcharge {
   transition: 0.2s;
 }
 
+/* ẩn khi có giá trị hoặc focus */
 .input-datetime input:focus + .time-placeholder,
 .input-datetime input:not(:placeholder-shown) + .time-placeholder {
   opacity: 0;
 }
+
 
 /* ===================== TrackAsia Popup ===================== */
 .ta-popup {
@@ -431,3 +434,4 @@ input#night-surcharge {
     flex-wrap: wrap;
     align-items: center;  
     gap
+
