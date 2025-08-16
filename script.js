@@ -403,6 +403,10 @@ window.addEventListener('DOMContentLoaded', ()=>{
         dtInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
         updateNightSurcharge(); // cập nhật checkbox giờ ban đêm
     }
+	datetimeInput.addEventListener('blur', () => {
+    if (!datetimeInput.value) timePlaceholder.classList.remove('has-value');
+});
+
 // ==================== Placeholder datetime hiển thị/ẩn ====================
     const timePlaceholder = document.querySelector('.input-datetime .time-placeholder');
 
