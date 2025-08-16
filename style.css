@@ -359,7 +359,7 @@ input#night-surcharge {
 
 .input-datetime input[type="datetime-local"] {
   width: 100%;
-  padding: 6px 8px 6px 32px;
+  padding: 6px 8px 6px 32px; /* căn chỉnh với icon */
   font-size: 13px;
   border: 2px solid #ccc;
   border-radius: 6px;
@@ -373,23 +373,25 @@ input#night-surcharge {
   box-shadow: 0 0 6px #0074D9aa;
 }
 
-/* placeholder hiển thị nhãn */
+/* nhãn giả hiển thị */
 .input-datetime .time-placeholder {
-  position: absolute;
-  left: 32px;           /* cách icon */
-  top: 50%;
-  transform: translateY(-50%);
-  color: #888;
-  font-size: 13px;
-  pointer-events: none;
-  transition: 0.2s;
+    position: absolute;
+    left: 32px;       /* khoảng cách từ icon */
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    font-size: 13px;
+    pointer-events: none;
+    transition: 0.2s;
 }
 
-/* ẩn khi có giá trị hoặc focus */
-.input-datetime input:focus + .time-placeholder,
-.input-datetime input:not(:placeholder-shown) + .time-placeholder {
-  opacity: 0;
+
+/* ẩn nhãn khi input có giá trị */
+.input-datetime .time-placeholder.has-value {
+    opacity: 0;
 }
+
+
 
 
 /* ===================== TrackAsia Popup ===================== */
