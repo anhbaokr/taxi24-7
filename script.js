@@ -29,6 +29,8 @@ geolocateControl.on('geolocate', async (event) => {
     map.flyTo({ center: coords, zoom: 14 });
 });
 
+
+
 // ==================== Setup TrackAsiaDirections Plugin ====================
 const customStyles = [
     {
@@ -201,6 +203,11 @@ function updateNightSurcharge() {
     nightStatus.textContent = night ? "✓ CÓ" : "KHÔNG";
     nightStatus.style.color = night ? "green" : "red";
 }
+datetimeInput.addEventListener('input', ()=>{
+    updateNightSurcharge();
+    drawRouteAndComputePrice();
+});
+
 
 // ==================== Tính giá + quãng đường ====================
 async function drawRouteAndComputePrice() {
@@ -300,6 +307,7 @@ document.getElementById('btn-current-location').addEventListener('click', async 
     }
 });
 
+
 // ==================== Reverse Button ====================
 document.getElementById('btn-reverse-vertical').addEventListener('click', ()=>{
     [startCoords, endCoords] = [endCoords, startCoords];
@@ -380,4 +388,32 @@ routeForm.addEventListener('submit', async (e)=>{
         submitBtn.disabled=false;
         submitBtn.textContent=oldBtnText;
     }
+});
+// ==================== Gán giá trị mặc định cho datetime-local ====================
+window.addEventListener('DOMContentLoaded', ()=>{
+    const dtInput = document.getElementById('datetime');
+    if(!dtInput.value){
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2,'0');
+        const month = String(now.getMonth()+1).padStart(2,'0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2,'0');
+        const minutes = String(now.getMinutes()).padStart(2,'0');
+
+        dtInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        updateNightSurcharge(); // cập nhật checkbox giờ ban đêm
+    }
+// ==================== Placeholder datetime hiển thị/ẩn ====================
+    const timePlaceholder = document.querySelector('.input-datetime .time-placeholder');
+
+    dtInput.addEventListener('input', ()=>{
+        if(dtInput.value) timePlaceholder.classList.add('has-value');
+        else timePlaceholder.classList.remove('has-value');
+
+        updateNightSurcharge();
+        drawRouteAndComputePrice();
+    });
+
+    // Thêm class .has-value nếu input đã có giá trị mặc định
+    if(dtInput.value) timePlaceholder.classList.add('has-value');
 });
