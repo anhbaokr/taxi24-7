@@ -1,123 +1,138 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Đặt Xe Nhanh - Tìm đường & Bản đồ</title>
+  <!-- Basic Meta -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taxi 24h Online - Dịch vụ đặt taxi nhanh chóng và an toàn</title>
+  <meta name="description" content="Dịch vụ đặt taxi 24h chuyên nghiệp, nhanh chóng, giá rẻ toàn quốc. Gọi ngay để có chuyến đi an toàn và tiết kiệm.">
+  <meta name="keywords" content="taxi 24h, đặt taxi online, taxi giá rẻ, dịch vụ taxi toàn quốc">
+  <meta name="author" content="Taxi 24h Online">
+  <meta name="robots" content="index, follow">
 
-<!-- TrackAsia GL CSS -->
-<link rel="stylesheet" href="https://unpkg.com/trackasia-gl@2.0.1/dist/trackasia-gl.css" />
-<link rel="stylesheet" href="https://unpkg.com/trackasia-gl-directions/dist/trackasia-gl-directions.css" />
+  <!-- Open Graph -->
+  <meta property="og:title" content="Taxi 24h Online - Dịch vụ đặt taxi nhanh chóng và an toàn">
+  <meta property="og:description" content="Dịch vụ đặt taxi 24h chuyên nghiệp, nhanh chóng, giá rẻ toàn quốc. Gọi ngay để có chuyến đi an toàn và tiết kiệm.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://taxi24h.online">
+  <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/296/296216.png">
 
-<!-- CSS riêng của bạn -->
-<link rel="stylesheet" href="style.css" />
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Taxi 24h Online - Dịch vụ đặt taxi nhanh chóng và an toàn">
+  <meta name="twitter:description" content="Dịch vụ đặt taxi 24h chuyên nghiệp, nhanh chóng, giá rẻ toàn quốc. Gọi ngay để có chuyến đi an toàn và tiết kiệm.">
+  <meta name="twitter:image" content="https://cdn-icons-png.flaticon.com/512/296/296216.png">
+
+  <!-- Favicon -->
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/296/296216.png" type="image/png">
+
+  <!-- CSS / Icon Libraries -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://unpkg.com/trackasia-gl@2.0.1/dist/trackasia-gl.css" />
+  <link rel="stylesheet" href="https://unpkg.com/trackasia-gl-directions/dist/trackasia-gl-directions.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- JSON-LD Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TaxiService",
+    "name": "Taxi 24h Online",
+    "image": "https://cdn-icons-png.flaticon.com/512/296/296216.png",
+    "url": "https://taxi24h.online",
+    "telephone": "+84-365-798-789",
+    "description": "Dịch vụ đặt taxi 24h chuyên nghiệp, nhanh chóng, giá rẻ khu vực Thành Phố Hà Nội.",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Trần Phú, Chương Mỹ",
+      "addressLocality": "Hà Nội",
+      "addressCountry": "VN"
+    },
+    "areaServed": "Hà Nội",
+    "openingHours": "Mo-Su 00:00-23:59"
+  }
+  </script>
 </head>
+
 <body>
-
-<div id="main-container">
-  <!-- Bản đồ, thêm class full-top-map -->
-  <div id="map" class="full-top-map">
-    <select id="style-select">
-      <option value="https://maps.track-asia.com/styles/v2/streets.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Đường phố</option>
-      <option value="https://maps.track-asia.com/styles/v1/satellite.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Vệ tinh</option>
-      <option value="https://maps.track-asia.com/styles/v1/simple.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Đơn giản</option>
-      <option value="https://maps.track-asia.com/styles/v1/night.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Tối</option>
-    </select>
-
-    <div id="route-info"></div> <!-- Thông tin khoảng cách/giá tiền -->
-  </div>
-
-  <!-- Form đặt xe -->
-  <form id="route-form">
-    <div class="form-body">
-
-      <!-- === Điểm đi + Điểm đến (Đã lên trên) === -->
-      <div class="input-row" style="margin-top:10px;">
-        <button id="btn-reverse-vertical" class="btn-reverse-vertical" title="Đảo chiều" type="button">⇅</button>
-        <div class="inputs-container">
-          <div class="input-group">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-            </svg>
-            <input type="text" id="start" placeholder="Điểm đi..." autocomplete="off" />
-            <button id="btn-current-location" type="button" title="Vị trí hiện tại"></button>
-            <div id="start-suggestions" class="suggestions"></div>
-          </div>
-          <div class="input-group">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d="M12 2L2 7v6c0 5 5 9 10 9s10-4 10-9V7l-10-5z"/>
-            </svg>
-            <input type="text" id="end" placeholder="Điểm đến..." autocomplete="off" />
-            <div id="end-suggestions" class="suggestions"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- === Tên + Số điện thoại (Đã xuống dưới) === -->
-      <div class="input-row">
-        <div class="input-group">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-          </svg>
-          <input type="text" id="user-name" placeholder="Nhập tên" autocomplete="off" />
-        </div>
-        <div class="input-group">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.21c1.12.45 2.33.69 3.56.69a1 1 0 011 1v3.5a1 1 0 01-1 1C10.74 21.27 2.73 13.26 2.73 3a1 1 0 011-1h3.5a1 1 0 011 1c0 1.23.24 2.44.69 3.56a1 1 0 01-.21 1.11l-2.2 2.2z"/>
-          </svg>
-          <input type="tel" id="user-phone" placeholder="Số điện thoại" autocomplete="off" />
-        </div>
-      </div>
-
-      <!-- === Loại xe === -->
-      <select id="vehicle-type">
-        <option value="" disabled selected>Chọn loại xe</option>
-        <option value="5-chỗ">5 chỗ</option>
-        <option value="7-chỗ">7 chỗ</option>
-        <option value="16-chỗ">16 chỗ</option>
-        <option value="xe-tai">Xe tải</option>
+  <main id="main-container">
+    <!-- Bản đồ -->
+    <section id="map" class="full-top-map">
+      <select id="style-select">
+        <option value="https://maps.track-asia.com/styles/v2/streets.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Đường phố</option>
+        <option value="https://maps.track-asia.com/styles/v2/satellite.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Vệ tinh</option>
+        <option value="https://maps.track-asia.com/styles/v2/simple.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Đơn giản</option>
+        <option value="https://maps.track-asia.com/styles/v2/night.json?key=0dfb3c4c83ebea6ae11754971709ddea53">Tối</option>
       </select>
+      <div id="route-info"></div>
+    </section>
 
-      <!-- === Ngày giờ === -->
-<div class="input-datetime">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-    <path d="M7 10h5v5H7zm6-7h2v2h-2zm4 0h2v2h-2zm-9 0h2v2H8zm11 4v14H4V7h16zm0-2H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/>
-  </svg>
-  <input type="datetime-local" id="datetime" placeholder=" " />
-  <label for="datetime" class="time-placeholder">dd/mm/yyyy --:-- --</label>
-</div>
+    <!-- Form đặt xe -->
+    <form id="route-form">
+      <div class="form-body">
+        <!-- Điểm đi + Điểm đến -->
+        <div class="input-row" style="margin-top:10px;">
+          <button id="btn-reverse-vertical" class="btn-reverse-vertical" type="button">⇅</button>
+          <div class="inputs-container">
+            <div class="input-group">
+              <input type="text" id="start" placeholder="Điểm đi..." autocomplete="off" />
+              <button id="btn-current-location" type="button" title="Vị trí hiện tại"></button>
+              <div id="start-suggestions" class="suggestions"></div>
+            </div>
+            <div class="input-group">
+              <input type="text" id="end" placeholder="Điểm đến..." autocomplete="off" />
+              <div id="end-suggestions" class="suggestions"></div>
+            </div>
+          </div>
+        </div>
 
-      <!-- === Checkbox row === -->
-      <div class="checkbox-row">
-        <label for="round-trip" class="checkbox-label">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M17 1l4 4-4 4V6H3V4h14V1zm-2 6v4a6 6 0 0 1-6 6H7l4 4-4 4h2a8 8 0 0 0 8-8V7h-2z"/>
-          </svg>
-          2 chiều
-          <input type="checkbox" id="round-trip" />
-        </label>
-        <label for="night-surcharge" class="checkbox-label">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M9.37 5.51A7 7 0 0 0 12 19a7 7 0 0 0 7-7 7 7 0 0 0-9.63-6.48z"/>
-          </svg>
-          <span id="night-surcharge-label-text">Phụ phí ban đêm</span>
-          <input type="checkbox" id="night-surcharge" disabled />
-          <span id="night-surcharge-status">CÓ</span>
-        </label>
+        <!-- Tên + Số điện thoại -->
+        <div class="input-row">
+          <div class="input-group">
+            <input type="text" id="user-name" placeholder="Nhập tên" autocomplete="off" />
+          </div>
+          <div class="input-group">
+            <input type="tel" id="user-phone" placeholder="Số điện thoại" autocomplete="off" />
+          </div>
+        </div>
+
+        <!-- Loại xe -->
+        <select id="vehicle-type">
+          <option value="" disabled selected>Chọn loại xe</option>
+          <option value="5-chỗ">5 chỗ</option>
+          <option value="7-chỗ">7 chỗ</option>
+          <option value="16-chỗ">16 chỗ</option>
+          <option value="xe-tai">Xe tải</option>
+        </select>
+
+        <!-- Ngày giờ -->
+        <div class="input-datetime">
+          <input type="datetime-local" id="datetime" />
+          <span class="time-placeholder"></span>
+        </div>
+
+        <!-- Checkbox row -->
+        <div class="checkbox-row">
+          <label for="round-trip" class="checkbox-label">2 chiều
+            <input type="checkbox" id="round-trip" />
+          </label>
+          <label for="night-surcharge" class="checkbox-label">Phụ phí ban đêm
+            <input type="checkbox" id="night-surcharge" disabled />
+            <span id="night-surcharge-status">CÓ</span>
+          </label>
+        </div>
+
+        <!-- Button đặt xe -->
+        <button type="submit">Đặt xe</button>
       </div>
+    </form>
+  </main>
 
-      <!-- === Button đặt xe === -->
-      <button type="submit" style="margin-top:10px; padding:10px 20px; font-weight:600; cursor:pointer;">Đặt xe</button>
-
-    </div>
-  </form>
-</div>
-
-<!-- TrackAsia GL JS -->
-<script src="https://unpkg.com/trackasia-gl@2.0.1/dist/trackasia-gl.js"></script>
-<script src="https://unpkg.com/trackasia-gl-directions/dist/trackasia-gl-directions.js"></script>
-<script src="script.js"></script>
-
+  <!-- JS Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://unpkg.com/trackasia-gl@2.0.1/dist/trackasia-gl.js"></script>
+  <script src="https://unpkg.com/trackasia-gl-directions/dist/trackasia-gl-directions.js"></script>
+  <script src="script.js"></script>
 </body>
-
 </html>
