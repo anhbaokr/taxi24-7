@@ -18,20 +18,18 @@ map.addControl(new trackasiagl.NavigationControl(), 'bottom-right');
 map.addControl(new trackasiagl.ScaleControl());
 map.addControl(new trackasiagl.FullscreenControl(), 'top-right');
 
-// ==================== GeolocateControl mặc định trên bản đồ ====================
+// ==================== GeolocateControl ====================
 const geolocateControl = new trackasiagl.GeolocateControl({ trackUserLocation: true });
 map.addControl(geolocateControl, 'bottom-right');
 
 geolocateControl.on('geolocate', async (event) => {
     const coords = [event.coords.longitude, event.coords.latitude];
     const label = await reverseGeocode(coords);
-    selectStart(coords, label); // Ghim marker và điền input điểm đi
+    selectStart(coords, label);
     map.flyTo({ center: coords, zoom: 14 });
 });
 
-
-
-// ==================== Setup TrackAsiaDirections Plugin ====================
+// ==================== TrackAsiaDirections ====================
 const customStyles = [
     {
         'id': 'directions-route-line-alt',
@@ -82,7 +80,7 @@ const directions = new TrackAsiaDirections({
 });
 map.addControl(directions, 'top-left');
 
-// Thay đổi style bản đồ từ menu
+// Thay đổi style bản đồ
 document.getElementById('style-select').addEventListener('change', (e) => {
     map.setStyle(e.target.value);
 });
@@ -203,11 +201,6 @@ function updateNightSurcharge() {
     nightStatus.textContent = night ? "✓ CÓ" : "KHÔNG";
     nightStatus.style.color = night ? "green" : "red";
 }
-datetimeInput.addEventListener('input', ()=>{
-    updateNightSurcharge();
-    drawRouteAndComputePrice();
-});
-
 
 // ==================== Tính giá + quãng đường ====================
 async function drawRouteAndComputePrice() {
@@ -240,7 +233,6 @@ async function drawRouteAndComputePrice() {
     if(document.getElementById('round-trip').checked) price*=1.25;
     if(nightCheckbox.checked) price*=1.2;
 
-    // --- Chỉnh thời gian hiển thị ---
     let hours = Math.floor(duration_min / 60);
     let minutes = duration_min % 60;
     let durationStr = hours > 0 ? `${hours} giờ ${minutes} phút` : `${minutes} phút`;
@@ -297,7 +289,7 @@ document.getElementById('btn-current-location').addEventListener('click', async 
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const coords = [pos.coords.longitude, pos.coords.latitude];
             const label = await reverseGeocode(coords);
-            selectStart(coords, label); // Ghim marker và điền input điểm đi
+            selectStart(coords, label);
             map.flyTo({ center: coords, zoom: 14 });
         }, (err) => {
             alert("Không lấy được vị trí hiện tại: " + err.message);
@@ -306,7 +298,6 @@ document.getElementById('btn-current-location').addEventListener('click', async 
         alert("Trình duyệt không hỗ trợ định vị.");
     }
 });
-
 
 // ==================== Reverse Button ====================
 document.getElementById('btn-reverse-vertical').addEventListener('click', ()=>{
@@ -340,19 +331,23 @@ datetimeInput.addEventListener('input', ()=>{
 
 // ==================== Gửi form lên Google Sheets ====================
 let datetimeTouched = false; // cờ bắt buộc click datetime
-const dtInput = document.getElementById('datetime');
-dtInput.addEventListener('focus', ()=>{ datetimeTouched = true; });
+const routeFormSubmitBtn = document.getElementById('route-form').querySelector('button[type="submit"]');
 
-const routeForm = document.getElementById('route-form');
-const submitBtn = routeForm.querySelector('button[type="submit"]');
-
+// Khi submit, kiểm tra datetimeTouched hoặc input có giá trị
 routeForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
+
+    if(datetimeInput.value) datetimeTouched = true;
+
+    if(!datetimeTouched){
+        alert("⚠️ Vui lòng chọn thời gian đặt xe!");
+        return;
+    }
 
     const name = document.getElementById('user-name').value.trim();
     const phone = document.getElementById('user-phone').value.trim();
     const vehicle = document.getElementById('vehicle-type').value;
-    const datetime = document.getElementById('datetime').value.trim();
+    const datetime = datetimeInput.value.trim();
     const origin = document.getElementById('start').value.trim();
     const destination = document.getElementById('end').value.trim();
     const twoWay = document.getElementById('round-trip').checked ? "true":"false";
@@ -362,19 +357,14 @@ routeForm.addEventListener('submit', async (e)=>{
     const priceText = routeInfoDiv.textContent.match(/💰 ([\d,]+)/);
     const price = priceText ? priceText[1].replace(/,/g,"") : "";
 
-    // ✅ Kiểm tra tất cả input và yêu cầu click datetime
     if(!name || !phone || !vehicle || !origin || !destination || !distance || !price){
         alert("⚠️ Vui lòng nhập đầy đủ thông tin.");
         return;
     }
-    if(!datetimeTouched){
-        alert("⚠️ Vui lòng click chọn thời gian đặt xe!");
-        return;
-    }
 
-    submitBtn.disabled=true;
-    const oldBtnText=submitBtn.textContent;
-    submitBtn.textContent="⏳ Đang gửi...";
+    routeFormSubmitBtn.disabled=true;
+    const oldBtnText=routeFormSubmitBtn.textContent;
+    routeFormSubmitBtn.textContent="⏳ Đang gửi...";
 
     const payload={name,phone,vehicle,datetime,origin,destination,twoWay,night,distance,price};
 
@@ -384,28 +374,37 @@ routeForm.addEventListener('submit', async (e)=>{
         const result=await res.json();
 
         if(result.status==="success"){
-            submitBtn.textContent="✅ Đặt xe thành công!";
+            routeFormSubmitBtn.textContent="✅ Đặt xe thành công!";
             setTimeout(()=>window.location.reload(),2000);
         } else {
             alert("❌ Lỗi gửi thông tin: "+result.message);
-            submitBtn.disabled=false;
-            submitBtn.textContent=oldBtnText;
+            routeFormSubmitBtn.disabled=false;
+            routeFormSubmitBtn.textContent=oldBtnText;
         }
     } catch(err){
         console.error(err);
         alert("❌ Không thể gửi dữ liệu. Kiểm tra kết nối hoặc URL Apps Script.");
-        submitBtn.disabled=false;
-        submitBtn.textContent=oldBtnText;
+        routeFormSubmitBtn.disabled=false;
+        routeFormSubmitBtn.textContent=oldBtnText;
     }
 });
 
-// ==================== Gán giá trị mặc định cho datetime-local ====================
-window.addEventListener('DOMContentLoaded', ()=>{
-    const dtInput = document.getElementById('datetime');
-    const timePlaceholder = document.querySelector('.input-datetime .time-placeholder');
+// ==================== Khởi tạo Flatpickr cho datetime ====================
+flatpickr("#datetime", {
+    enableTime: true,
+    dateFormat: "Y-m-d\\TH:i",
+    defaultDate: datetimeInput.value || null,
+    onOpen: () => { datetimeTouched = true; },
+    onChange: (selectedDates, dateStr) => {
+        if(dateStr) datetimeTouched = true;
+        updateNightSurcharge();
+        drawRouteAndComputePrice();
+    }
+});
 
-    // Gán giá trị mặc định nếu input trống
-    if(!dtInput.value){
+// ==================== Gán giá trị mặc định cho datetime ====================
+window.addEventListener('DOMContentLoaded', ()=>{
+    if(!datetimeInput.value){
         const now = new Date();
         const day = String(now.getDate()).padStart(2,'0');
         const month = String(now.getMonth()+1).padStart(2,'0');
@@ -413,47 +412,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
         const hours = String(now.getHours()).padStart(2,'0');
         const minutes = String(now.getMinutes()).padStart(2,'0');
 
-        dtInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
-        updateNightSurcharge(); // cập nhật checkbox giờ ban đêm
-    }
-
-    // ==================== Placeholder datetime hiển thị/ẩn ====================
-    const datetimeInput = dtInput; // chỉ định lại cho dễ đọc
-
-    // Khi người dùng thay đổi giá trị
-    datetimeInput.addEventListener('input', () => {
-        if(datetimeInput.value) timePlaceholder.classList.add('has-value');
-        else timePlaceholder.classList.remove('has-value');
-
+        datetimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
         updateNightSurcharge();
-        drawRouteAndComputePrice();
-    });
-
-    // Khi mất focus, nếu không có giá trị thì hiện nhãn lại
-    datetimeInput.addEventListener('blur', () => {
-        if(!datetimeInput.value) timePlaceholder.classList.remove('has-value');
-    });
-
-    // Khởi tạo trạng thái placeholder ngay lúc load
-    if(datetimeInput.value) timePlaceholder.classList.add('has-value');
-    else timePlaceholder.classList.remove('has-value');
-});
-// Bật datetime picker khi click vào bất kỳ chỗ nào trong wrapper
-       const datetimeWrapper = document.querySelector('.input-datetime');
-       datetimeWrapper.addEventListener('click', () => {
-       datetimeInput.focus(); // mở picker
-     });
-// ==================== Khởi tạo Flatpickr cho input datetime ====================
-flatpickr("#datetime", {
-    enableTime: true,
-    dateFormat: "Y-m-d\\TH:i",
-    defaultDate: document.getElementById('datetime').value || null,
-    onOpen: function(selectedDates, dateStr, instance){
-        // Khi popup lịch mở ra => đánh dấu đã click
-        datetimeTouched = true;
-    },
-    onChange: function(selectedDates, dateStr, instance){
-        updateNightSurcharge();
-        drawRouteAndComputePrice();
     }
 });
