@@ -329,12 +329,12 @@ datetimeInput.addEventListener('input', ()=>{
     drawRouteAndComputePrice();
 });
 
-// ==================== Gửi form lên Google Sheets ====================
-let datetimeTouched = false; // cờ bắt buộc click datetime
+// ==================== Khởi tạo biến form và submit form ====================
 const routeFormSubmitBtn = document.getElementById('route-form').querySelector('button[type="submit"]');
+let datetimeTouched = false;
 
-// Khi submit, kiểm tra datetimeTouched hoặc input có giá trị
-routeForm.addEventListener('submit', async (e)=>{
+const routeForm = document.getElementById('route-form');
+routeForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     if(datetimeInput.value) datetimeTouched = true;
@@ -350,11 +350,13 @@ routeForm.addEventListener('submit', async (e)=>{
     const datetime = datetimeInput.value.trim();
     const origin = document.getElementById('start').value.trim();
     const destination = document.getElementById('end').value.trim();
-    const twoWay = document.getElementById('round-trip').checked ? "true":"false";
-    const night = document.getElementById('night-surcharge').checked ? "true":"false";
-    const distanceText = routeInfoDiv.textContent.match(/Quãng đường: ([\d.]+) km/);
+    const twoWay = document.getElementById('round-trip').checked ? "true" : "false";
+    const night = document.getElementById('night-surcharge').checked ? "true" : "false";
+
+    // Lấy khoảng cách và giá từ routeInfoDiv
+    const distanceText = routeInfoDiv.textContent.replace(/\s/g,'').match(/Quãngđường:([\d.]+)km/);
     const distance = distanceText ? distanceText[1] : "";
-    const priceText = routeInfoDiv.textContent.match(/💰 ([\d,]+)/);
+    const priceText = routeInfoDiv.textContent.replace(/\s/g,'').match(/💰([\d,]+)/);
     const price = priceText ? priceText[1].replace(/,/g,"") : "";
 
     if(!name || !phone || !vehicle || !origin || !destination || !distance || !price){
@@ -362,30 +364,31 @@ routeForm.addEventListener('submit', async (e)=>{
         return;
     }
 
-    routeFormSubmitBtn.disabled=true;
-    const oldBtnText=routeFormSubmitBtn.textContent;
-    routeFormSubmitBtn.textContent="⏳ Đang gửi...";
+    // Disable nút khi đang gửi
+    routeFormSubmitBtn.disabled = true;
+    const oldBtnText = routeFormSubmitBtn.textContent;
+    routeFormSubmitBtn.textContent = "⏳ Đang gửi...";
 
-    const payload={name,phone,vehicle,datetime,origin,destination,twoWay,night,distance,price};
+    const payload = { name, phone, vehicle, datetime, origin, destination, twoWay, night, distance, price };
 
-    try{
-        const scriptURL='https://script.google.com/macros/s/AKfycbz0nm7t0oeOQsk8vKVuJObSJCPxVOpF_mdgm9O2aYyh_z2Rjsz7GKt-3WwriGvI_jIqpA/exec';
-        const res=await fetch(scriptURL,{method:'POST',body:new URLSearchParams(payload)});
-        const result=await res.json();
+    try {
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbz0nm7t0oeOQsk8vKVuJObSJCPxVOpF_mdgm9O2aYyh_z2Rjsz7GKt-3WwriGvI_jIqpA/exec';
+        const res = await fetch(scriptURL, { method: 'POST', body: new URLSearchParams(payload) });
+        const result = await res.json();
 
-        if(result.status==="success"){
-            routeFormSubmitBtn.textContent="✅ Đặt xe thành công!";
-            setTimeout(()=>window.location.reload(),2000);
+        if(result.status === "success"){
+            routeFormSubmitBtn.textContent = "✅ Đặt xe thành công!";
+            setTimeout(() => window.location.reload(), 2000);
         } else {
-            alert("❌ Lỗi gửi thông tin: "+result.message);
-            routeFormSubmitBtn.disabled=false;
-            routeFormSubmitBtn.textContent=oldBtnText;
+            alert("❌ Lỗi gửi thông tin: " + result.message);
+            routeFormSubmitBtn.disabled = false;
+            routeFormSubmitBtn.textContent = oldBtnText;
         }
-    } catch(err){
+    } catch(err) {
         console.error(err);
         alert("❌ Không thể gửi dữ liệu. Kiểm tra kết nối hoặc URL Apps Script.");
-        routeFormSubmitBtn.disabled=false;
-        routeFormSubmitBtn.textContent=oldBtnText;
+        routeFormSubmitBtn.disabled = false;
+        routeFormSubmitBtn.textContent = oldBtnText;
     }
 });
 
@@ -393,7 +396,7 @@ routeForm.addEventListener('submit', async (e)=>{
 flatpickr("#datetime", {
     enableTime: true,
     dateFormat: "Y-m-d\\TH:i",
-    defaultDate: datetimeInput.value || null,
+    defaultDate: datetimeInput.value || new Date(),
     onOpen: () => { datetimeTouched = true; },
     onChange: (selectedDates, dateStr) => {
         if(dateStr) datetimeTouched = true;
