@@ -324,22 +324,54 @@ document.getElementById('btn-reverse-vertical').addEventListener('click', ()=>{
 // ==================== Cập nhật giá khi thay đổi ====================
 document.getElementById('vehicle-type').addEventListener('change', drawRouteAndComputePrice);
 document.getElementById('round-trip').addEventListener('change', drawRouteAndComputePrice);
-datetimeInput.addEventListener('input', ()=>{
-    updateNightSurcharge();
-    drawRouteAndComputePrice();
-});
 
 // ==================== Khởi tạo biến form và submit form ====================
 const routeFormSubmitBtn = document.getElementById('route-form').querySelector('button[type="submit"]');
 let datetimeTouched = false;
-
 const routeForm = document.getElementById('route-form');
+
+// Hàm chuẩn hóa datetime cho input type="datetime-local" (YYYY-MM-DDTHH:MM)
+function normalizeDatetime(dt){
+    const date = new Date(dt);
+    const year = date.getFullYear();
+    const month = String(date.getMonth()+1).padStart(2,'0');
+    const day = String(date.getDate()).padStart(2,'0');
+    const hours = String(date.getHours()).padStart(2,'0');
+    const minutes = String(date.getMinutes()).padStart(2,'0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+// Flatpickr setup
+flatpickr("#datetime", {
+    enableTime: true,
+    dateFormat: "Y-m-d\\TH:i",
+    defaultDate: datetimeInput.value ? normalizeDatetime(datetimeInput.value) : new Date(),
+    onOpen: () => { datetimeTouched = true; },
+    onChange: (selectedDates, dateStr) => {
+        if(selectedDates.length>0){
+            datetimeInput.value = normalizeDatetime(selectedDates[0]);
+            datetimeTouched = true;
+            updateNightSurcharge();
+            drawRouteAndComputePrice();
+        }
+    }
+});
+
+// Gán giá trị mặc định khi load trang
+window.addEventListener('DOMContentLoaded', ()=>{
+    if(!datetimeInput.value){
+        datetimeInput.value = normalizeDatetime(new Date());
+        updateNightSurcharge();
+    }
+});
+
+// Submit form
 routeForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    if(datetimeInput.value) datetimeTouched = true;
-
-    if(!datetimeTouched){
+    // chuẩn hóa giá trị datetime trước khi check
+    if(datetimeInput.value) datetimeInput.value = normalizeDatetime(datetimeInput.value);
+    if(!datetimeInput.value || !datetimeTouched){
         alert("⚠️ Vui lòng chọn thời gian đặt xe!");
         return;
     }
