@@ -3,6 +3,9 @@
 const apiKey = "0dfb3c4c83ebea6ae11754971709ddea53";
 let startCoords = null, endCoords = null;
 const routeInfoDiv = document.getElementById('route-info');
+const datetimeInput = document.getElementById('datetime');
+const nightCheckbox = document.getElementById('night-surcharge');
+const nightStatus = document.getElementById('night-surcharge-status');
 
 // ==================== Khởi tạo Track-Asia Map ====================
 const map = new trackasiagl.Map({
@@ -182,10 +185,6 @@ function selectEnd(coords, label) {
 }
 
 // ==================== Night Surcharge ====================
-const datetimeInput = document.getElementById('datetime');
-const nightCheckbox = document.getElementById('night-surcharge');
-const nightStatus = document.getElementById('night-surcharge-status');
-
 function updateNightSurcharge() {
     const val = datetimeInput.value;
     if (!val) {
@@ -324,54 +323,22 @@ document.getElementById('btn-reverse-vertical').addEventListener('click', ()=>{
 // ==================== Cập nhật giá khi thay đổi ====================
 document.getElementById('vehicle-type').addEventListener('change', drawRouteAndComputePrice);
 document.getElementById('round-trip').addEventListener('change', drawRouteAndComputePrice);
+datetimeInput.addEventListener('input', ()=>{
+    updateNightSurcharge();
+    drawRouteAndComputePrice();
+});
 
-// ==================== Khởi tạo biến form và submit form ====================
-const routeFormSubmitBtn = document.getElementById('route-form').querySelector('button[type="submit"]');
+// ==================== Gửi form lên Google Sheets ====================
 let datetimeTouched = false;
 const routeForm = document.getElementById('route-form');
+const routeFormSubmitBtn = routeForm.querySelector('button[type="submit"]');
 
-// Hàm chuẩn hóa datetime cho input type="datetime-local" (YYYY-MM-DDTHH:MM)
-function normalizeDatetime(dt){
-    const date = new Date(dt);
-    const year = date.getFullYear();
-    const month = String(date.getMonth()+1).padStart(2,'0');
-    const day = String(date.getDate()).padStart(2,'0');
-    const hours = String(date.getHours()).padStart(2,'0');
-    const minutes = String(date.getMinutes()).padStart(2,'0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-}
-
-// Flatpickr setup
-flatpickr("#datetime", {
-    enableTime: true,
-    dateFormat: "Y-m-d\\TH:i",
-    defaultDate: datetimeInput.value ? normalizeDatetime(datetimeInput.value) : new Date(),
-    onOpen: () => { datetimeTouched = true; },
-    onChange: (selectedDates, dateStr) => {
-        if(selectedDates.length>0){
-            datetimeInput.value = normalizeDatetime(selectedDates[0]);
-            datetimeTouched = true;
-            updateNightSurcharge();
-            drawRouteAndComputePrice();
-        }
-    }
-});
-
-// Gán giá trị mặc định khi load trang
-window.addEventListener('DOMContentLoaded', ()=>{
-    if(!datetimeInput.value){
-        datetimeInput.value = normalizeDatetime(new Date());
-        updateNightSurcharge();
-    }
-});
-
-// Submit form
-routeForm.addEventListener('submit', async (e) => {
+routeForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
 
-    // chuẩn hóa giá trị datetime trước khi check
-    if(datetimeInput.value) datetimeInput.value = normalizeDatetime(datetimeInput.value);
-    if(!datetimeInput.value || !datetimeTouched){
+    if(datetimeInput.value) datetimeTouched = true;
+
+    if(!datetimeTouched){
         alert("⚠️ Vui lòng chọn thời gian đặt xe!");
         return;
     }
@@ -382,13 +349,11 @@ routeForm.addEventListener('submit', async (e) => {
     const datetime = datetimeInput.value.trim();
     const origin = document.getElementById('start').value.trim();
     const destination = document.getElementById('end').value.trim();
-    const twoWay = document.getElementById('round-trip').checked ? "true" : "false";
-    const night = document.getElementById('night-surcharge').checked ? "true" : "false";
-
-    // Lấy khoảng cách và giá từ routeInfoDiv
-    const distanceText = routeInfoDiv.textContent.replace(/\s/g,'').match(/Quãngđường:([\d.]+)km/);
+    const twoWay = document.getElementById('round-trip').checked ? "true":"false";
+    const night = nightCheckbox.checked ? "true":"false";
+    const distanceText = routeInfoDiv.textContent.match(/Quãng đường: ([\d.]+) km/);
     const distance = distanceText ? distanceText[1] : "";
-    const priceText = routeInfoDiv.textContent.replace(/\s/g,'').match(/💰([\d,]+)/);
+    const priceText = routeInfoDiv.textContent.match(/💰 ([\d,]+)/);
     const price = priceText ? priceText[1].replace(/,/g,"") : "";
 
     if(!name || !phone || !vehicle || !origin || !destination || !distance || !price){
@@ -396,44 +361,30 @@ routeForm.addEventListener('submit', async (e) => {
         return;
     }
 
-    // Disable nút khi đang gửi
-    routeFormSubmitBtn.disabled = true;
-    const oldBtnText = routeFormSubmitBtn.textContent;
-    routeFormSubmitBtn.textContent = "⏳ Đang gửi...";
+    routeFormSubmitBtn.disabled=true;
+    const oldBtnText=routeFormSubmitBtn.textContent;
+    routeFormSubmitBtn.textContent="⏳ Đang gửi...";
 
-    const payload = { name, phone, vehicle, datetime, origin, destination, twoWay, night, distance, price };
+    const payload={name,phone,vehicle,datetime,origin,destination,twoWay,night,distance,price};
 
-    try {
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbz0nm7t0oeOQsk8vKVuJObSJCPxVOpF_mdgm9O2aYyh_z2Rjsz7GKt-3WwriGvI_jIqpA/exec';
-        const res = await fetch(scriptURL, { method: 'POST', body: new URLSearchParams(payload) });
-        const result = await res.json();
+    try{
+        const scriptURL='https://script.google.com/macros/s/AKfycbz0nm7t0oeOQsk8vKVuJObSJCPxVOpF_mdgm9O2aYyh_z2Rjsz7GKt-3WwriGvI_jIqpA/exec';
+        const res=await fetch(scriptURL,{method:'POST',body:new URLSearchParams(payload)});
+        const result=await res.json();
 
-        if(result.status === "success"){
-            routeFormSubmitBtn.textContent = "✅ Đặt xe thành công!";
-            setTimeout(() => window.location.reload(), 2000);
+        if(result.status==="success"){
+            routeFormSubmitBtn.textContent="✅ Đặt xe thành công!";
+            setTimeout(()=>window.location.reload(),2000);
         } else {
-            alert("❌ Lỗi gửi thông tin: " + result.message);
-            routeFormSubmitBtn.disabled = false;
-            routeFormSubmitBtn.textContent = oldBtnText;
+            alert("❌ Lỗi gửi thông tin: "+result.message);
+            routeFormSubmitBtn.disabled=false;
+            routeFormSubmitBtn.textContent=oldBtnText;
         }
-    } catch(err) {
+    } catch(err){
         console.error(err);
         alert("❌ Không thể gửi dữ liệu. Kiểm tra kết nối hoặc URL Apps Script.");
-        routeFormSubmitBtn.disabled = false;
-        routeFormSubmitBtn.textContent = oldBtnText;
-    }
-});
-
-// ==================== Khởi tạo Flatpickr cho datetime ====================
-flatpickr("#datetime", {
-    enableTime: true,
-    dateFormat: "Y-m-d\\TH:i",
-    defaultDate: datetimeInput.value || new Date(),
-    onOpen: () => { datetimeTouched = true; },
-    onChange: (selectedDates, dateStr) => {
-        if(dateStr) datetimeTouched = true;
-        updateNightSurcharge();
-        drawRouteAndComputePrice();
+        routeFormSubmitBtn.disabled=false;
+        routeFormSubmitBtn.textContent=oldBtnText;
     }
 });
 
