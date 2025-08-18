@@ -1,4 +1,4 @@
-/* loginstyle.css */
+/* style.css */
 
 /* Reset cơ bản */
 * {
@@ -9,16 +9,16 @@
 }
 
 body {
-  background: #f0f2f5;
+  background-color: #f0f2f5;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 .container {
-  background: #fff;
-  padding: 30px 40px;
+  background-color: #fff;
+  padding: 30px 35px;
   border-radius: 10px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.1);
   width: 100%;
@@ -31,18 +31,14 @@ h2 {
   color: #333;
 }
 
-.form-box {
-  display: block;
-}
-
 input {
   width: 100%;
-  padding: 12px 15px;
-  margin: 10px 0;
+  padding: 12px 14px;
+  margin: 8px 0;
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 14px;
-  transition: border 0.3s;
+  transition: border-color 0.3s;
 }
 
 input:focus {
@@ -55,16 +51,17 @@ button {
   padding: 12px;
   margin-top: 10px;
   border: none;
-  background: #4a90e2;
-  color: white;
+  background-color: #4a90e2;
+  color: #fff;
   font-size: 16px;
+  font-weight: bold;
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.3s;
 }
 
 button:hover {
-  background: #357ab8;
+  background-color: #357ab8;
 }
 
 p.switch {
@@ -95,4 +92,9 @@ p.switch a:hover {
 
 .error {
   color: red;
+}
+
+/* Ẩn/hiện form */
+.form-box {
+  display: block;
 }
