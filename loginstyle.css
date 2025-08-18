@@ -1,9 +1,11 @@
-body { font-family: Arial, sans-serif; max-width: 400px; margin: 30px auto; }
-h2 { margin-top: 20px; text-align: center; }
-input { display: block; margin: 10px 0; padding: 8px; width: 100%; box-sizing: border-box; }
-button { padding: 10px 20px; width: 100%; cursor: pointer; }
-.container { border: 1px solid #ccc; padding: 20px; border-radius: 8px; }
-.form-box { margin-bottom: 20px; }
-.switch { text-align: center; margin-top: 10px; }
-#status { margin-top: 15px; font-weight: bold; text-align: center; color: green; }
+body { font-family: Arial, sans-serif; max-width: 400px; margin: 40px auto; background: #f2f2f2; }
+.container { background: #fff; padding: 20px 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+h2 { margin-bottom: 20px; text-align: center; }
+input { display: block; margin: 10px 0; padding: 10px; width: 100%; box-sizing: border-box; border-radius: 5px; border: 1px solid #ccc; }
+button { width: 100%; padding: 10px; margin-top: 10px; border: none; border-radius: 5px; background: #4CAF50; color: white; cursor: pointer; font-size: 16px; }
+button:hover { background: #45a049; }
+p.switch { text-align: center; margin-top: 15px; }
+p.switch a { cursor: pointer; color: #007BFF; text-decoration: none; }
+p.switch a:hover { text-decoration: underline; }
+#status { margin-top: 15px; font-weight: bold; text-align: center; }
 .error { color: red; }
