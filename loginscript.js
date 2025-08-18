@@ -1,3 +1,4 @@
+const GAS_URL = "https://script.google.com/macros/s/AKfycbynzu9A2tDqXsY9pIKZoQVxNc1R1YTb2py4mG_DcmHdFMs2xh82isnnEzvwKB28DwSKgg/exec"; // Thay URL Web App của bạn
 
 function toggleForms() {
   const regBox = document.getElementById("registerBox");
@@ -11,9 +12,10 @@ document.addEventListener("DOMContentLoaded", function(){
   const loginForm = document.getElementById("loginForm");
   const status = document.getElementById("status");
 
-  // Xử lý đăng ký
-  registerForm.addEventListener("submit", function(e){
+  // Đăng ký
+  registerForm.addEventListener("submit", async function(e){
     e.preventDefault();
+
     const username = document.getElementById("regUser").value.trim();
     const password = document.getElementById("regPass").value;
     const password2 = document.getElementById("regPass2").value;
@@ -26,20 +28,38 @@ document.addEventListener("DOMContentLoaded", function(){
       return;
     }
 
-    google.script.run.withSuccessHandler(function(res){
-      status.innerText = res.msg;
-    }).registerUser({username,password,phone,email,country});
+    try {
+      const res = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({action:"register", username, password, phone, email, country})
+      });
+      const data = await res.json();
+      status.innerText = data.msg;
+    } catch(err) {
+      status.innerHTML = "<span class='error'>Lỗi kết nối Web App</span>";
+      console.error(err);
+    }
   });
 
-  // Xử lý đăng nhập
-  loginForm.addEventListener("submit", function(e){
+  // Đăng nhập
+  loginForm.addEventListener("submit", async function(e){
     e.preventDefault();
+
     const username = document.getElementById("logUser").value.trim();
     const password = document.getElementById("logPass").value;
 
-    google.script.run.withSuccessHandler(function(res){
-      status.innerText = res.msg;
-    }).loginUser({username,password});
+    try {
+      const res = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({action:"login", username, password})
+      });
+      const data = await res.json();
+      status.innerText = data.msg;
+    } catch(err) {
+      status.innerHTML = "<span class='error'>Lỗi kết nối Web App</span>";
+      console.error(err);
+    }
   });
 });
-
