@@ -1,4 +1,4 @@
-const GAS_URL = "https://script.google.com/macros/s/AKfycbynzu9A2tDqXsY9pIKZoQVxNc1R1YTb2py4mG_DcmHdFMs2xh82isnnEzvwKB28DwSKgg/exec"; // Thay URL Web App của bạn
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxtAtPBciw6XpLcBt1k7wjgvrw2UexB1FTckQPevbFstnTWOoW35YSK_lGnCVZyRjGRoA/exec"; // Thay URL Web App của bạn
 
 function toggleForms() {
   const regBox = document.getElementById("registerBox");
